@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #0a0a0a;
+  color: #e0e0e0;
+  font-family: 'Share Tech Mono', monospace;
+  min-height: 100vh;
+}
+
+button {
+  font-family: 'Share Tech Mono', monospace;
+}
+
+input, select, textarea {
+  font-family: 'Share Tech Mono', monospace;
+  background: #1a1a1a;
+  color: #e0e0e0;
+  border: 1px solid #333;
+}
+
+input::placeholder {
+  color: #555;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cc0000;
+}

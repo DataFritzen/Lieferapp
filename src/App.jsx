@@ -66,18 +66,13 @@ function PosterStatus({ status, bestaetigterSlot, paketstation }) {
       textAlign: 'center'
     }}>
       <div style={{ marginBottom: '8px', display: 'inline-block' }}>
-        <img
-          src="/chebetsatige.png"
-          alt="El Comandante"
-          style={{
-            width: '180px', height: '180px',
-            objectFit: 'cover', objectPosition: 'top',
-            borderRadius: '50%', border: '2px solid #8b0000',
-            filter: 'contrast(1.1)', display: 'block', margin: '0 auto'
-          }}
-        />
+        <img src="/che.png" alt="El Comandante" style={{
+          width: '180px', height: '180px',
+          objectFit: 'cover', objectPosition: 'top',
+          borderRadius: '50%', border: '2px solid #8b0000',
+          filter: 'contrast(1.1)', display: 'block', margin: '0 auto'
+        }} />
       </div>
-
       <div style={{
         background: '#8b0000', borderRadius: '12px', padding: '14px 16px',
         marginTop: '8px', position: 'relative'
@@ -92,44 +87,10 @@ function PosterStatus({ status, bestaetigterSlot, paketstation }) {
         <div style={{ fontSize: '13px', color: '#e8e0d0', fontStyle: 'italic', marginBottom: '4px' }}>
           "La revolución no espera."
         </div>
-        <div style={{ fontSize: '12px', color: '#c8a96e' }}>
-          Der Comandante kümmert sich.
-        </div>
-        <div style={{ fontSize: '11px', color: '#c8a96e', marginTop: '2px' }}>
-          Bestätigung folgt in Kürze.
-        </div>
+        <div style={{ fontSize: '12px', color: '#c8a96e' }}>Der Comandante kümmert sich.</div>
+        <div style={{ fontSize: '11px', color: '#9a8a70', marginTop: '2px' }}>Bestätigung folgt in Kürze.</div>
       </div>
-
-      {status === 'bestätigt' && (
-        <div style={{
-          background: C.goldDim, border: `1px solid ${C.gold}`,
-          borderRadius: '12px', padding: '16px', textAlign: 'left', marginTop: '16px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <StarIcon color={C.red} size={14} />
-            <span style={{ fontSize: '12px', color: C.gold, letterSpacing: '0.1em' }}>BESTÄTIGT</span>
-          </div>
-          {bestaetigterSlot && (
-            <div style={{ marginBottom: '10px' }}>
-              <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '3px' }}>ZEITFENSTER</div>
-              <div style={{ fontSize: '15px', color: C.text }}>📦 {paketstation.name}</div>
-              <div style={{ fontSize: '13px', color: C.textDim }}>{paketstation.adresse}</div>
-              {bestaetigterSlot.datum ? new Date(bestaetigterSlot.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + '  ·  ' : ''}
-              {bestaetigterSlot.uhrzeit}
-            </div>
-            </div>
-      )}
-      {paketstation && (
-        <div>
-          <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '3px' }}>ABHOLPUNKT</div>
-          <div style={{ fontSize: '15px', color: C.text }}>📦 {paketstation.name}</div>
-          <div style={{ fontSize: '13px', color: C.textDim }}>{paketstation.adresse}</div>
-        </div>
-      )}
     </div>
-  )
-}
-    </div >
   )
 }
 
@@ -254,7 +215,7 @@ function Besteller({ token }) {
 
       {bestellStatus !== 'bestätigt' && (
         <PosterStatus status={bestellStatus} bestaetigterSlot={bestaetigterSlot} paketstation={paketstation} />
-      )}/>
+      )}
 
       <div style={{ marginBottom: '16px' }}>
         <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '10px' }}>KOMMUNIKATION</div>

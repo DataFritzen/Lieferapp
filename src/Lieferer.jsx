@@ -227,11 +227,11 @@ function Lieferer() {
   const [produktMengen, setProduktMengen] = useState('')
 
   const uhrzeiten = [
-    '07:00','07:30','08:00','08:30','09:00','09:30',
-    '10:00','10:30','11:00','11:30','12:00','12:30',
-    '13:00','13:30','14:00','14:30','15:00','15:30',
-    '16:00','16:30','17:00','17:30','18:00','18:30',
-    '19:00','19:30','20:00','20:30','21:00'
+    '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
+    '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
+    '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
+    '19:00', '19:30', '20:00', '20:30', '21:00'
   ]
 
   async function ladeProdukte() {
@@ -401,11 +401,11 @@ function Lieferer() {
   const heute = new Date()
   heute.setHours(0, 0, 0, 0)
 
-  const gefilterteBestellungen = bestellungen.filter(b =>
-    bestellFilter === 'alle' ? true :
-    bestellFilter === 'storniert' ? b.status === 'storniert' :
-    b.status === bestellFilter
-  )
+  const gefilterteBestellungen = bestellungen.filter(b => {
+    if (bestellFilter === 'alle') return true
+    const anzeigeStatus = b.status === 'storniert' ? (b.original_status || 'offen') : b.status
+    return anzeigeStatus === bestellFilter
+  })
 
   const gefilterteTokens = tokens.filter(t => tokenFilter === 'inaktiv' ? tokenIstInaktiv(t) : true)
 
@@ -459,9 +459,8 @@ function Lieferer() {
         <div>
           <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', flexWrap: 'wrap' }}>
             {[
-              { key: 'offen', label: `Offen (${bestellungen.filter(b => b.status === 'offen').length})` },
-              { key: 'bestätigt', label: `Bestätigt (${bestellungen.filter(b => b.status === 'bestätigt').length})` },
-              { key: 'storniert', label: `Storniert (${bestellungen.filter(b => b.status === 'storniert').length})` },
+              { key: 'offen', label: `Offen (${bestellungen.filter(b => (b.status === 'offen') || (b.status === 'storniert' && (b.original_status || 'offen') === 'offen')).length})` },
+              { key: 'bestätigt', label: `Bestätigt (${bestellungen.filter(b => (b.status === 'bestätigt') || (b.status === 'storniert' && b.original_status === 'bestätigt')).length})` },
               { key: 'alle', label: `Alle (${bestellungen.length})` },
             ].map(f => (
               <button key={f.key} onClick={() => setBestellFilter(f.key)} style={btnFilter(bestellFilter === f.key)}>{f.label}</button>
@@ -561,7 +560,7 @@ function Lieferer() {
               <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '6px', letterSpacing: '0.08em' }}>MAX. BESTELLUNGEN</div>
               <select value={maxBestellungen} onChange={e => setMaxBestellungen(parseInt(e.target.value))}
                 style={{ ...selectStyle, width: '100%' }}>
-                {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n}</option>)}
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -582,34 +581,34 @@ function Lieferer() {
           {Object.entries(datumsGruppen)
             .filter(([d]) => new Date(d) >= heute)
             .map(([d, slots]) => (
-            <div key={d} style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.1em', marginBottom: '8px' }}>
-                📅 {datumFormatieren(d)}
-              </div>
-              {slots.map(z => {
-                const belegung = belegungZaehlen(z.id)
-                return (
-                  <div key={z.id} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    background: C.card, border: `1px solid ${C.border}`, borderRadius: '10px',
-                    padding: '12px 14px', marginBottom: '6px'
-                  }}>
-                    <div>
-                      <span style={{ color: C.text, fontSize: '14px', fontWeight: '600' }}>{z.uhrzeit}</span>
-                      <span style={{ marginLeft: '12px', fontSize: '12px', color: belegung >= z.max_bestellungen ? C.redBright : C.green }}>
-                        {belegung}/{z.max_bestellungen}
-                      </span>
+              <div key={d} style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.1em', marginBottom: '8px' }}>
+                  📅 {datumFormatieren(d)}
+                </div>
+                {slots.map(z => {
+                  const belegung = belegungZaehlen(z.id)
+                  return (
+                    <div key={z.id} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      background: C.card, border: `1px solid ${C.border}`, borderRadius: '10px',
+                      padding: '12px 14px', marginBottom: '6px'
+                    }}>
+                      <div>
+                        <span style={{ color: C.text, fontSize: '14px', fontWeight: '600' }}>{z.uhrzeit}</span>
+                        <span style={{ marginLeft: '12px', fontSize: '12px', color: belegung >= z.max_bestellungen ? C.redBright : C.green }}>
+                          {belegung}/{z.max_bestellungen}
+                        </span>
+                      </div>
+                      <button onClick={() => zeitfensterLoeschen(z.id)} style={{
+                        padding: '6px 12px', background: C.redDim, color: C.redBright,
+                        border: `1px solid ${C.red}`, borderRadius: '8px', cursor: 'pointer',
+                        fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
+                      }}>Löschen</button>
                     </div>
-                    <button onClick={() => zeitfensterLoeschen(z.id)} style={{
-                      padding: '6px 12px', background: C.redDim, color: C.redBright,
-                      border: `1px solid ${C.red}`, borderRadius: '8px', cursor: 'pointer',
-                      fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
-                    }}>Löschen</button>
-                  </div>
-                )
-              })}
-            </div>
-          ))}
+                  )
+                })}
+              </div>
+            ))}
         </div>
       )}
 

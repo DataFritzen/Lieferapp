@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabase'
 
-function Messenger({ bestellungId, pseudonym }) {
+function Messenger({ bestellungId, pseudonym, mitMikrofon = false }) {
   const [nachrichten, setNachrichten] = useState([])
   const [text, setText] = useState('')
+  const [hoert, setHoert] = useState(false)
   const endRef = useRef(null)
+  const erkennungRef = useRef(null)
 
   async function ladeNachrichten() {
     const { data } = await supabase
@@ -15,14 +17,41 @@ function Messenger({ bestellungId, pseudonym }) {
     setNachrichten(data || [])
   }
 
-  async function senden() {
-    if (!text.trim()) return
+  async function senden(nachrichtText) {
+    const t = nachrichtText || text
+    if (!t.trim()) return
     await supabase.from('nachrichten').insert([{
       bestellung_id: bestellungId,
       von: pseudonym,
-      text: text.trim()
+      text: t.trim()
     }])
     setText('')
+  }
+
+  function mikrofon() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('Spracherkennung wird von diesem Browser nicht unterstützt.')
+      return
+    }
+    if (hoert) {
+      erkennungRef.current?.stop()
+      setHoert(false)
+      return
+    }
+    const Erkennung = window.SpeechRecognition || window.webkitSpeechRecognition
+    const erkennung = new Erkennung()
+    erkennung.lang = 'de-DE'
+    erkennung.continuous = false
+    erkennung.interimResults = false
+    erkennung.onresult = (e) => {
+      const erkannt = e.results[0][0].transcript
+      setText(prev => prev + erkannt)
+    }
+    erkennung.onend = () => setHoert(false)
+    erkennung.onerror = () => setHoert(false)
+    erkennungRef.current = erkennung
+    erkennung.start()
+    setHoert(true)
   }
 
   useEffect(() => {
@@ -41,13 +70,26 @@ function Messenger({ bestellungId, pseudonym }) {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [nachrichten])
 
+  const C = {
+    bg: '#0d0d0d',
+    border: '#242424',
+    accent: '#e63030',
+    text: '#d4d4d4',
+    textDim: '#555',
+    eigene: '#1e3a5f',
+    eigeneText: '#90c4ff',
+    andere: '#1a1a1a',
+    andereText: '#aaa',
+  }
+
   return (
-    <div style={{ border: '1px solid #2a2a2a', borderRadius: '4px', overflow: 'hidden' }}>
-      <div style={{ height: '160px', overflowY: 'auto', padding: '12px', background: '#0d0d0d' }}>
+    <div style={{ border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden' }}>
+      {/* Nachrichten */}
+      <div style={{ height: '160px', overflowY: 'auto', padding: '12px', background: C.bg }}>
         {nachrichten.length === 0 && (
-          <p style={{ color: '#333', fontSize: '12px', textAlign: 'center', letterSpacing: '0.1em', marginTop: '50px' }}>
-            — KEINE NACHRICHTEN —
-          </p>
+          <div style={{ color: C.textDim, fontSize: '13px', textAlign: 'center', marginTop: '50px' }}>
+            Noch keine Nachrichten
+          </div>
         )}
         {nachrichten.map(n => {
           const ichBin = n.von === pseudonym
@@ -58,14 +100,11 @@ function Messenger({ bestellungId, pseudonym }) {
               marginBottom: '8px'
             }}>
               <span style={{
-                background: ichBin ? '#1e3a5f' : '#1a1a1a',
-                color: ichBin ? '#90c4ff' : '#aaa',
-                padding: '6px 10px',
-                borderRadius: '4px',
-                fontSize: '13px',
-                maxWidth: '80%',
-                border: ichBin ? 'none' : '1px solid #2a2a2a',
-                letterSpacing: '0.03em'
+                background: ichBin ? C.eigene : C.andere,
+                color: ichBin ? C.eigeneText : C.andereText,
+                padding: '8px 12px', borderRadius: '10px',
+                fontSize: '14px', maxWidth: '80%',
+                border: ichBin ? 'none' : `1px solid ${C.border}`,
               }}>
                 {n.text}
               </span>
@@ -74,25 +113,37 @@ function Messenger({ bestellungId, pseudonym }) {
         })}
         <div ref={endRef} />
       </div>
-      <div style={{ display: 'flex', borderTop: '1px solid #2a2a2a', background: '#0d0d0d' }}>
+
+      {/* Eingabe */}
+      <div style={{ display: 'flex', borderTop: `1px solid ${C.border}`, background: C.bg }}>
+        {mitMikrofon && (
+          <button onClick={mikrofon} style={{
+            padding: '12px 14px', background: hoert ? '#3a0a0a' : 'transparent',
+            color: hoert ? C.accent : C.textDim,
+            border: 'none', borderRight: `1px solid ${C.border}`,
+            cursor: 'pointer', fontSize: '18px',
+            animation: hoert ? 'pulse 1s infinite' : 'none'
+          }} title="Diktieren">
+            🎙
+          </button>
+        )}
         <input
           type="text"
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && senden()}
-          placeholder="Nachricht..."
+          placeholder={hoert ? 'Höre zu...' : 'Nachricht...'}
           style={{
-            flex: 1, padding: '10px 12px', border: 'none', outline: 'none',
-            fontSize: '13px', background: 'transparent', color: '#e0e0e0',
-            fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.03em'
+            flex: 1, padding: '12px 14px', border: 'none', outline: 'none',
+            fontSize: '14px', background: 'transparent', color: C.text,
+            fontFamily: 'Share Tech Mono, monospace',
           }}
         />
-        <button onClick={senden} style={{
-          padding: '10px 16px', background: '#cc0000', color: 'white',
-          border: 'none', cursor: 'pointer', fontSize: '14px',
-          fontFamily: 'Share Tech Mono, monospace'
+        <button onClick={() => senden()} style={{
+          padding: '12px 16px', background: C.accent, color: 'white',
+          border: 'none', cursor: 'pointer', fontSize: '16px',
         }}>
-          ►
+          ➤
         </button>
       </div>
     </div>

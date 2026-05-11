@@ -2,7 +2,203 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabase'
 import Messenger from './Messenger'
 import { entschluesseln } from './crypto'
-import { t } from './theme'
+
+const C = {
+  bg: '#080808',
+  card: '#141414',
+  card2: '#1a1a1a',
+  border: '#242424',
+  accent: '#e63030',
+  accentDim: '#3a0a0a',
+  green: '#22c55e',
+  greenDim: '#052010',
+  blue: '#3b82f6',
+  blueDim: '#0a1535',
+  yellow: '#f59e0b',
+  yellowDim: '#1a1000',
+  text: '#d4d4d4',
+  textDim: '#666',
+  textMuted: '#333',
+}
+
+const inputStyle = {
+  width: '100%', padding: '12px 14px', background: C.card,
+  border: `1px solid ${C.border}`, borderRadius: '10px',
+  color: C.text, fontSize: '14px', fontFamily: 'Share Tech Mono, monospace',
+  marginBottom: '8px', boxSizing: 'border-box', outline: 'none',
+}
+
+const selectStyle = {
+  padding: '12px 14px', background: C.card, border: `1px solid ${C.border}`,
+  borderRadius: '10px', color: C.text, fontSize: '14px',
+  fontFamily: 'Share Tech Mono, monospace', outline: 'none',
+}
+
+function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, onLoeschen, onPaketstation, onStornieren }) {
+  const [messengerOffen, setMessengerOffen] = useState(false)
+  const [ungelesen, setUngelesen] = useState(false)
+
+  const slot = zeitfenster.find(z => z.id === b.zeitfenster_id)
+  const station = paketstationen.find(p => p.id === b.paketstation_id)
+  const daten = b.produkte_verschluesselt ? entschluesseln(b.produkte_verschluesselt) : null
+  const bestellProdukte = daten?.produkte || {}
+  const tel = daten?.telefon
+
+  useEffect(() => {
+    if (!messengerOffen) {
+      supabase.from('nachrichten').select('id').eq('bestellung_id', b.id).then(({ data }) => {
+        if (data && data.length > 0) setUngelesen(true)
+      })
+    }
+  }, [b.id, messengerOffen])
+
+  const istStorniert = b.status === 'storniert'
+
+  const borderColor = istStorniert ? '#ff4444' : b.status === 'bestätigt' ? C.green : b.status === 'ausgestellt' ? C.blue : C.border
+  const accentColor = istStorniert ? '#ff4444' : b.status === 'bestätigt' ? C.green : b.status === 'ausgestellt' ? C.blue : C.accent
+
+  return (
+    <div style={{
+      background: C.card, borderRadius: '14px',
+      border: `1px solid ${borderColor}`,
+      borderLeft: `4px solid ${accentColor}`,
+      padding: '16px', marginBottom: '12px',
+      opacity: istStorniert ? 0.7 : 1
+    }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{b.pseudonym}</span>
+        <span style={{
+          fontSize: '11px', padding: '3px 10px', borderRadius: '20px', letterSpacing: '0.08em',
+          background: istStorniert ? '#1a0000' : b.status === 'offen' ? '#1a0f00' : b.status === 'bestätigt' ? C.greenDim : C.blueDim,
+          color: istStorniert ? '#ff4444' : b.status === 'offen' ? C.yellow : b.status === 'bestätigt' ? C.green : C.blue,
+          border: `1px solid ${istStorniert ? '#ff4444' : b.status === 'offen' ? C.yellow : b.status === 'bestätigt' ? C.green : C.blue}`
+        }}>
+          {istStorniert ? 'STORNIERT' : b.status.toUpperCase()}
+        </span>
+      </div>
+
+      {/* Waren */}
+      <div style={{ marginBottom: '10px' }}>
+        <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '6px', letterSpacing: '0.06em' }}>WAREN</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+          {Object.entries(bestellProdukte).map(([id, menge]) => {
+            const prod = produkte.find(p => p.id === id)
+            return (
+              <span key={id} style={{
+                fontSize: '13px', padding: '4px 10px',
+                background: C.card2, border: `1px solid ${C.border}`,
+                borderRadius: '8px', color: C.text
+              }}>
+                {prod ? prod.name : id} · {menge}{prod ? (prod.einheit === 'Gramm' ? 'g' : ' Stk') : 'x'}
+              </span>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Zeitfenster */}
+      {slot && (
+        <div style={{ fontSize: '13px', color: C.textDim, marginBottom: '8px' }}>
+          🕐 {slot.datum ? new Date(slot.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + ' · ' : ''}{slot.uhrzeit}
+        </div>
+      )}
+
+      {/* Telefon */}
+      {tel && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          <span style={{ fontSize: '13px', color: C.textDim }}>📞 {tel}</span>
+          <button onClick={() => { navigator.clipboard.writeText(tel); alert('Kopiert!') }} style={{
+            fontSize: '11px', padding: '2px 8px', background: C.card2,
+            color: C.textDim, border: `1px solid ${C.border}`, borderRadius: '6px',
+            cursor: 'pointer', fontFamily: 'Share Tech Mono, monospace'
+          }}>COPY</button>
+        </div>
+      )}
+
+      {/* Paketbox */}
+      {!istStorniert && (
+        <div style={{ marginBottom: '12px' }}>
+          <select value={b.paketstation_id || ''} onChange={e => onPaketstation(b.id, e.target.value)}
+            style={{ ...selectStyle, width: '100%', fontSize: '13px', padding: '10px 12px' }}>
+            <option value="">📦 Paketbox zuweisen...</option>
+            {paketstationen.map(p => (
+              <option key={p.id} value={p.id}>{p.name} — {p.adresse}</option>
+            ))}
+          </select>
+          {station && <div style={{ fontSize: '12px', color: C.green, marginTop: '4px' }}>✓ {station.name} — {station.adresse}</div>}
+        </div>
+      )}
+
+      {/* Messenger Toggle */}
+      <button onClick={() => { setMessengerOffen(!messengerOffen); setUngelesen(false) }} style={{
+        width: '100%', padding: '10px', background: C.card2,
+        color: ungelesen ? C.yellow : C.textDim,
+        border: `1px solid ${ungelesen ? C.yellow : C.border}`,
+        borderRadius: '10px', cursor: 'pointer', fontSize: '13px',
+        fontFamily: 'Share Tech Mono, monospace', marginBottom: '10px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+      }}>
+        {ungelesen ? '💬 Neue Nachricht — öffnen' : messengerOffen ? '▲ Nachrichten schließen' : '▼ Nachrichten öffnen'}
+      </button>
+
+      {messengerOffen && (
+        <div style={{ marginBottom: '12px' }}>
+          <Messenger bestellungId={b.id} pseudonym="Lieferer" mitMikrofon={true} />
+        </div>
+      )}
+
+      {/* Aktionen */}
+      {!istStorniert && (
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {b.status === 'offen' && (
+            <>
+              <button onClick={() => onStatus(b.id, 'bestätigt')} style={{
+                flex: 1, padding: '12px', background: C.greenDim, color: C.green,
+                border: `1px solid ${C.green}`, borderRadius: '10px', cursor: 'pointer',
+                fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
+              }}>✓ Bestätigen</button>
+              <button onClick={() => onStornieren(b.id)} style={{
+                padding: '12px 16px', background: '#1a0000', color: '#ff4444',
+                border: '1px solid #ff4444', borderRadius: '10px', cursor: 'pointer',
+                fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
+              }}>Stornieren</button>
+            </>
+          )}
+          {b.status === 'bestätigt' && (
+            <>
+              <button onClick={() => onStatus(b.id, 'ausgestellt')} style={{
+                flex: 1, padding: '12px', background: C.blueDim, color: C.blue,
+                border: `1px solid ${C.blue}`, borderRadius: '10px', cursor: 'pointer',
+                fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
+              }}>📦 Ausgestellt</button>
+              <button onClick={() => onStornieren(b.id)} style={{
+                padding: '12px 16px', background: '#1a0000', color: '#ff4444',
+                border: '1px solid #ff4444', borderRadius: '10px', cursor: 'pointer',
+                fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
+              }}>Stornieren</button>
+            </>
+          )}
+          {b.status === 'ausgestellt' && (
+            <button onClick={() => onLoeschen(b.id)} style={{
+              flex: 1, padding: '12px', background: C.accentDim, color: C.accent,
+              border: `1px solid ${C.accent}`, borderRadius: '10px', cursor: 'pointer',
+              fontSize: '14px', fontFamily: 'Share Tech Mono, monospace'
+            }}>🗑 Löschen</button>
+          )}
+        </div>
+      )}
+
+      {istStorniert && (
+        <button onClick={() => onLoeschen(b.id)} style={{
+          width: '100%', padding: '12px', background: C.accentDim, color: C.accent,
+          border: `1px solid ${C.accent}`, borderRadius: '10px', cursor: 'pointer',
+          fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
+        }}>🗑 Endgültig löschen</button>
+      )}
+    </div>
+  )
+}
 
 function Lieferer() {
   const [bestellungen, setBestellungen] = useState([])
@@ -16,9 +212,11 @@ function Lieferer() {
   const [vonUhrzeit, setVonUhrzeit] = useState('')
   const [bisUhrzeit, setBisUhrzeit] = useState('')
   const [datum, setDatum] = useState(new Date().toISOString().split('T')[0])
+  const [maxBestellungen, setMaxBestellungen] = useState(5)
   const [neuerName, setNeuerName] = useState('')
   const [neueAdresse, setNeueAdresse] = useState('')
   const [neuerToken, setNeuerToken] = useState(null)
+  const [tokenFilter, setTokenFilter] = useState('alle')
   const [produktName, setProduktName] = useState('')
   const [produktBeschreibung, setProduktBeschreibung] = useState('')
   const [produktEinheit, setProduktEinheit] = useState('Stück')
@@ -49,10 +247,10 @@ function Lieferer() {
       supabase.from('zeitfenster').select('*').order('datum').order('uhrzeit'),
       supabase.from('paketstationen').select('*').order('name')
     ])
-    const sortiert = (b || []).sort((a, b) => {
-      const datumA = a.zeitfenster?.datum + ' ' + a.zeitfenster?.uhrzeit || ''
-      const datumB = b.zeitfenster?.datum + ' ' + b.zeitfenster?.uhrzeit || ''
-      return datumA.localeCompare(datumB)
+    const sortiert = (b || []).sort((a, bb) => {
+      const dA = a.zeitfenster?.datum + ' ' + a.zeitfenster?.uhrzeit || ''
+      const dB = bb.zeitfenster?.datum + ' ' + bb.zeitfenster?.uhrzeit || ''
+      return dA.localeCompare(dB)
     })
     setBestellungen(sortiert)
     setZeitfenster(z || [])
@@ -82,9 +280,24 @@ function Lieferer() {
   async function zeitfensterHinzufuegen() {
     if (!vonUhrzeit || !bisUhrzeit) { alert('Bitte Von und Bis auswählen.'); return }
     if (vonUhrzeit >= bisUhrzeit) { alert('Von muss vor Bis liegen.'); return }
-    const { error } = await supabase.from('zeitfenster').insert([{ uhrzeit: `${vonUhrzeit}-${bisUhrzeit}`, datum, max_bestellungen: 3, aktiv: true }])
+    const { error } = await supabase.from('zeitfenster').insert([{
+      uhrzeit: `${vonUhrzeit}-${bisUhrzeit}`, datum, max_bestellungen: maxBestellungen, aktiv: true
+    }])
     if (error) alert('Fehler: ' + error.message)
     else { setVonUhrzeit(''); setBisUhrzeit(''); ladeAlles() }
+  }
+
+  async function letztenTagKopieren() {
+    const sortiert = [...zeitfenster].sort((a, b) => b.datum?.localeCompare(a.datum))
+    if (sortiert.length === 0) { alert('Keine Slots zum Kopieren.'); return }
+    const letzterTag = sortiert[0].datum
+    const slots = zeitfenster.filter(z => z.datum === letzterTag)
+    for (const slot of slots) {
+      await supabase.from('zeitfenster').insert([{
+        uhrzeit: slot.uhrzeit, datum, max_bestellungen: slot.max_bestellungen, aktiv: true
+      }])
+    }
+    ladeAlles()
   }
 
   async function zeitfensterLoeschen(id) {
@@ -109,6 +322,13 @@ function Lieferer() {
     ladeAlles()
   }
 
+  async function bestellungStornieren(id) {
+    const ok = window.confirm('Bestellung stornieren?')
+    if (!ok) return
+    await supabase.from('bestellungen').update({ status: 'storniert', storniert_am: new Date().toISOString() }).eq('id', id)
+    ladeAlles()
+  }
+
   async function bestellungLoeschen(id) {
     await supabase.from('nachrichten').delete().eq('bestellung_id', id)
     await supabase.from('bestellungen').delete().eq('id', id)
@@ -128,15 +348,13 @@ function Lieferer() {
   }
 
   async function tokenSperren(id) {
-    const ok = window.confirm('Token sperren? Zugang wird sofort entzogen.')
+    const ok = window.confirm('Token sperren?')
     if (!ok) return
     await supabase.from('tokens').update({ aktiv: false }).eq('id', id)
     ladeTokens()
   }
 
-  function qrUrl(token) {
-    return `${window.location.origin}?t=${token}`
-  }
+  function qrUrl(token) { return `${window.location.origin}?t=${token}` }
 
   function belegungZaehlen(zeitfensterId) {
     return bestellungen.filter(b => b.zeitfenster_id === zeitfensterId).length
@@ -156,6 +374,14 @@ function Lieferer() {
     return new Date(d).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })
   }
 
+  function tokenIstInaktiv(t) {
+    if (t.aktiv) return false
+    if (!t.zuletzt_genutzt) return true
+    const zweiMonate = new Date()
+    zweiMonate.setMonth(zweiMonate.getMonth() - 2)
+    return new Date(t.zuletzt_genutzt) < zweiMonate
+  }
+
   useEffect(() => {
     ladeAlles()
     const kanal = supabase
@@ -165,216 +391,94 @@ function Lieferer() {
     return () => supabase.removeChannel(kanal)
   }, [])
 
-  if (laden) return (
-    <div style={{ padding: '2rem', color: '#333', fontSize: '12px', letterSpacing: '0.1em' }}>
-      LADE DATEN...
-    </div>
-  )
+  if (laden) return <div style={{ padding: '2rem', color: C.textMuted, fontSize: '13px', background: C.bg, minHeight: '100vh' }}>Laden...</div>
 
   const datumsGruppen = gruppiereNachDatum()
 
-  const inputStyle = {
-    width: '100%', padding: '10px', background: '#111', border: '1px solid #2a2a2a',
-    borderRadius: '4px', color: '#e0e0e0', fontSize: '13px', marginBottom: '8px',
-    boxSizing: 'border-box', fontFamily: 'Share Tech Mono, monospace'
-  }
+  const gefilterteBestellungen = bestellungen.filter(b => {
+    if (bestellFilter === 'alle') return true
+    if (bestellFilter === 'storniert') return b.status === 'storniert'
+    return b.status === bestellFilter
+  })
 
-  const selectStyle = {
-    padding: '10px', background: '#111', border: '1px solid #2a2a2a',
-    borderRadius: '4px', color: '#e0e0e0', fontSize: '13px',
-    fontFamily: 'Share Tech Mono, monospace'
-  }
+  const gefilterteTokens = tokens.filter(t => {
+    if (tokenFilter === 'alle') return true
+    if (tokenFilter === 'inaktiv') return tokenIstInaktiv(t)
+    return true
+  })
 
-  const tabs = ['bestellungen', 'produkte', 'zeitfenster', 'paketstationen', 'zugaenge']
-  const tabLabels = {
-    bestellungen: `AUFTRÄGE (${bestellungen.length})`,
-    produkte: `WAREN (${produkte.length})`,
-    zeitfenster: `SLOTS (${zeitfenster.length})`,
-    paketstationen: `BOXEN (${paketstationen.length})`,
-    zugaenge: 'ZUGÄNGE'
-  }
+  const tabs = [
+    { key: 'bestellungen', label: `Aufträge (${bestellungen.filter(b => b.status !== 'storniert').length})` },
+    { key: 'produkte', label: `Waren (${produkte.length})` },
+    { key: 'zeitfenster', label: `Slots (${zeitfenster.length})` },
+    { key: 'paketstationen', label: `Boxen (${paketstationen.length})` },
+    { key: 'zugaenge', label: 'Zugänge' },
+  ]
 
   return (
-    <div style={{ padding: '1.5rem', maxWidth: '680px', margin: '0 auto' }}>
+    <div style={{ padding: '16px', maxWidth: '680px', margin: '0 auto', minHeight: '100vh', background: C.bg }}>
 
       {/* Header */}
-      <div style={{ borderBottom: '1px solid #cc0000', paddingBottom: '12px', marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '10px', color: '#cc0000', letterSpacing: '0.15em', marginBottom: '4px' }}>LIEFERSYSTEM // OPERATOR</div>
-        <div style={{ fontSize: '11px', color: '#555' }}>ZUGANG AUTORISIERT</div>
+      <div style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ fontSize: '11px', color: C.accent, letterSpacing: '0.12em', marginBottom: '4px' }}>LIEFERSYSTEM</div>
+        <div style={{ fontSize: '12px', color: C.textDim }}>Operator-Zugang</div>
       </div>
 
       {/* Navigation */}
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        {tabs.map(a => (
-          <button key={a} onClick={() => setAnsicht(a)} style={{
-            padding: '6px 12px', fontSize: '11px', letterSpacing: '0.08em',
-            background: ansicht === a ? '#cc0000' : 'transparent',
-            color: ansicht === a ? 'white' : '#555',
-            border: ansicht === a ? '1px solid #cc0000' : '1px solid #2a2a2a',
-            borderRadius: '4px', cursor: 'pointer',
-            fontFamily: 'Share Tech Mono, monospace'
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
+        {tabs.map(tab => (
+          <button key={tab.key} onClick={() => setAnsicht(tab.key)} style={{
+            padding: '8px 14px', fontSize: '12px', whiteSpace: 'nowrap',
+            background: ansicht === tab.key ? C.accent : C.card,
+            color: ansicht === tab.key ? 'white' : C.textDim,
+            border: `1px solid ${ansicht === tab.key ? C.accent : C.border}`,
+            borderRadius: '8px', cursor: 'pointer', fontFamily: 'Share Tech Mono, monospace',
+            fontWeight: ansicht === tab.key ? '600' : '400'
           }}>
-            {tabLabels[a]}
+            {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Bestellungen */}
+      {/* BESTELLUNGEN */}
       {ansicht === 'bestellungen' && (
         <div>
-{/* Filter */}
-          <div style={{ display: 'flex', gap: '4px', marginBottom: '1rem' }}>
-            {['offen', 'bestätigt', 'alle'].map(f => {
-              const count = f === 'alle' ? bestellungen.length : bestellungen.filter(b => b.status === f).length
-              return (
-                <button key={f} onClick={() => setBestellFilter(f)} style={{
-                  padding: '6px 12px', fontSize: '11px', letterSpacing: '0.08em',
-                  background: bestellFilter === f ? '#cc0000' : 'transparent',
-                  color: bestellFilter === f ? 'white' : '#555',
-                  border: bestellFilter === f ? '1px solid #cc0000' : '1px solid #2a2a2a',
-                  borderRadius: '4px', cursor: 'pointer',
-                  fontFamily: 'Share Tech Mono, monospace'
-                }}>
-                  {f.toUpperCase()} ({count})
-                </button>
-              )
-            })}
+          {/* Filter */}
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', flexWrap: 'wrap' }}>
+            {[
+              { key: 'offen', label: `Offen (${bestellungen.filter(b => b.status === 'offen').length})` },
+              { key: 'bestätigt', label: `Bestätigt (${bestellungen.filter(b => b.status === 'bestätigt').length})` },
+              { key: 'storniert', label: `Storniert (${bestellungen.filter(b => b.status === 'storniert').length})` },
+              { key: 'alle', label: `Alle (${bestellungen.length})` },
+            ].map(f => (
+              <button key={f.key} onClick={() => setBestellFilter(f.key)} style={{
+                padding: '8px 14px', fontSize: '12px',
+                background: bestellFilter === f.key ? C.accent : C.card,
+                color: bestellFilter === f.key ? 'white' : C.textDim,
+                border: `1px solid ${bestellFilter === f.key ? C.accent : C.border}`,
+                borderRadius: '8px', cursor: 'pointer', fontFamily: 'Share Tech Mono, monospace'
+              }}>{f.label}</button>
+            ))}
           </div>
 
-          {bestellungen.filter(b => bestellFilter === 'alle' || b.status === bestellFilter).length === 0 && (
-            <div style={{ color: '#333', fontSize: '12px', letterSpacing: '0.1em', textAlign: 'center', padding: '2rem' }}>
-              — KEINE AUFTRÄGE —
-            </div>
+          {gefilterteBestellungen.length === 0 && (
+            <div style={{ color: C.textMuted, fontSize: '14px', textAlign: 'center', padding: '40px' }}>Keine Aufträge</div>
           )}
-          {bestellungen.filter(b => bestellFilter === 'alle' || b.status === bestellFilter).map(b => {
-            const slot = zeitfenster.find(z => z.id === b.zeitfenster_id)
-            const station = paketstationen.find(p => p.id === b.paketstation_id)
-            const daten = b.produkte_verschluesselt ? entschluesseln(b.produkte_verschluesselt) : null
-            const bestellProdukte = daten?.produkte || {}
-            const tel = daten?.telefon
-
-            return (
-              <div key={b.id} style={{
-                border: `1px solid ${b.status === 'bestätigt' ? '#1e3a1e' : b.status === 'ausgestellt' ? '#1e1e3a' : '#2a2a2a'}`,
-                borderLeft: `3px solid ${b.status === 'bestätigt' ? '#00aa44' : b.status === 'ausgestellt' ? '#4444cc' : '#cc0000'}`,
-                borderRadius: '4px', padding: '1rem', marginBottom: '10px',
-                background: '#0d0d0d'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '13px', color: '#e0e0e0', letterSpacing: '0.05em' }}>{b.pseudonym}</span>
-                  <span style={{
-                    fontSize: '10px', padding: '2px 8px', borderRadius: '2px', letterSpacing: '0.1em',
-                    background: b.status === 'offen' ? '#2a1500' : b.status === 'bestätigt' ? '#001a0d' : '#0a0a2a',
-                    color: b.status === 'offen' ? '#cc6600' : b.status === 'bestätigt' ? '#00aa44' : '#4444cc',
-                    border: `1px solid ${b.status === 'offen' ? '#cc6600' : b.status === 'bestätigt' ? '#00aa44' : '#4444cc'}`
-                  }}>
-                    {b.status.toUpperCase()}
-                  </span>
-                </div>
-
-                {/* Produkte */}
-                <div style={{ marginBottom: '8px' }}>
-                  <div style={{ fontSize: '10px', color: '#555', letterSpacing: '0.1em', marginBottom: '4px' }}>WAREN</div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {Object.entries(bestellProdukte).map(([id, menge]) => {
-                      const prod = produkte.find(p => p.id === id)
-                      return (
-                        <span key={id} style={{
-                          fontSize: '12px', padding: '3px 8px',
-                          background: '#1a1a1a', border: '1px solid #2a2a2a',
-                          borderRadius: '4px', color: '#cc0000'
-                        }}>
-                          {prod ? prod.name : id} · {menge}{prod ? (prod.einheit === 'Gramm' ? 'g' : 'x') : 'x'}
-                        </span>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Slot */}
-                {slot && (
-                  <div style={{ marginBottom: '8px' }}>
-                    <div style={{ fontSize: '10px', color: '#555', letterSpacing: '0.1em', marginBottom: '2px' }}>ZEITFENSTER</div>
-                    <div style={{ fontSize: '13px', color: '#888' }}>
-                      {slot.datum ? datumFormatieren(slot.datum) + ' · ' : ''}{slot.uhrzeit}
-                    </div>
-                  </div>
-                )}
-
-                {/* Telefon */}
-                {tel && (
-                  <div style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ fontSize: '10px', color: '#555', letterSpacing: '0.1em' }}>TEL</div>
-                    <span style={{ fontSize: '13px', color: '#888' }}>{tel}</span>
-                    <button onClick={() => { navigator.clipboard.writeText(tel); alert('Kopiert!') }} style={{
-                      fontSize: '10px', padding: '2px 6px', background: 'transparent',
-                      color: '#555', border: '1px solid #2a2a2a', borderRadius: '4px',
-                      cursor: 'pointer', fontFamily: 'Share Tech Mono, monospace'
-                    }}>COPY</button>
-                  </div>
-                )}
-
-                {/* Paketbox zuweisen */}
-                <div style={{ marginBottom: '10px' }}>
-                  <div style={{ fontSize: '10px', color: '#555', letterSpacing: '0.1em', marginBottom: '4px' }}>PAKETBOX</div>
-                  <select value={b.paketstation_id || ''} onChange={e => pakietstationZuweisen(b.id, e.target.value)}
-                    style={{ ...selectStyle, width: '100%' }}>
-                    <option value="">— zuweisen —</option>
-                    {paketstationen.map(p => (
-                      <option key={p.id} value={p.id}>{p.name} — {p.adresse}</option>
-                    ))}
-                  </select>
-                  {station && <div style={{ fontSize: '12px', color: '#00aa44', marginTop: '4px' }}>✓ {station.name} — {station.adresse}</div>}
-                </div>
-
-                {/* Timestamp */}
-                <div style={{ fontSize: '11px', color: '#333', marginBottom: '10px' }}>
-                  {new Date(b.erstellt_am).toLocaleString('de-DE')}
-                </div>
-
-                <Messenger bestellungId={b.id} pseudonym="Lieferer" />
-
-                {/* Aktionen */}
-                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                  {b.status === 'offen' && (
-                    <button onClick={() => statusSetzen(b.id, 'bestätigt')} style={{
-                      padding: '8px 16px', background: '#001a0d', color: '#00aa44',
-                      border: '1px solid #00aa44', borderRadius: '4px', cursor: 'pointer',
-                      fontSize: '11px', letterSpacing: '0.1em', fontFamily: 'Share Tech Mono, monospace'
-                    }}>
-                      [ BESTÄTIGEN ]
-                    </button>
-                  )}
-                  {b.status === 'bestätigt' && (
-                    <button onClick={() => statusSetzen(b.id, 'ausgestellt')} style={{
-                      padding: '8px 16px', background: '#0a0a2a', color: '#4488ff',
-                      border: '1px solid #4488ff', borderRadius: '4px', cursor: 'pointer',
-                      fontSize: '11px', letterSpacing: '0.1em', fontFamily: 'Share Tech Mono, monospace'
-                    }}>
-                      [ AUSGESTELLT ]
-                    </button>
-                  )}
-                  {b.status === 'ausgestellt' && (
-                    <button onClick={() => bestellungLoeschen(b.id)} style={{
-                      padding: '8px 16px', background: '#1a0000', color: '#cc0000',
-                      border: '1px solid #cc0000', borderRadius: '4px', cursor: 'pointer',
-                      fontSize: '11px', letterSpacing: '0.1em', fontFamily: 'Share Tech Mono, monospace'
-                    }}>
-                      [ LÖSCHEN ]
-                    </button>
-                  )}
-                </div>
-              </div>
-            )
-          })}
+          {gefilterteBestellungen.map(b => (
+            <BestellungCard key={b.id} b={b}
+              zeitfenster={zeitfenster} paketstationen={paketstationen} produkte={produkte}
+              onStatus={statusSetzen} onLoeschen={bestellungLoeschen}
+              onPaketstation={pakietstationZuweisen} onStornieren={bestellungStornieren}
+            />
+          ))}
         </div>
       )}
 
-      {/* Produkte */}
+      {/* PRODUKTE */}
       {ansicht === 'produkte' && (
         <div>
-          <div style={{ border: '1px solid #2a2a2a', borderRadius: '4px', padding: '1rem', marginBottom: '1.5rem', background: '#0d0d0d' }}>
-            <div style={{ fontSize: '10px', color: '#555', letterSpacing: '0.1em', marginBottom: '12px' }}>NEUE WARE ANLEGEN</div>
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+            <div style={{ fontSize: '12px', color: C.textDim, marginBottom: '12px', letterSpacing: '0.08em' }}>NEUE WARE</div>
             <input type="text" placeholder="Bezeichnung" value={produktName} onChange={e => setProduktName(e.target.value)} style={inputStyle} />
             <input type="text" placeholder="Beschreibung (optional)" value={produktBeschreibung} onChange={e => setProduktBeschreibung(e.target.value)} style={inputStyle} />
             <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
@@ -382,69 +486,109 @@ function Lieferer() {
                 <option value="Stück">Stück</option>
                 <option value="Gramm">Gramm</option>
               </select>
-              <input type="number" placeholder="Preis (€)" value={produktPreis} onChange={e => setProduktPreis(e.target.value)}
-                style={{ ...selectStyle, flex: 1, border: '1px solid #2a2a2a' }} />
+              <input type="number" placeholder="Preis €" value={produktPreis} onChange={e => setProduktPreis(e.target.value)}
+                style={{ ...selectStyle, flex: 1, width: 'auto' }} />
             </div>
             <input type="text"
-              placeholder={produktEinheit === 'Gramm' ? 'Basis-Menge in g (z.B. 10)' : 'Max. Stückzahl (z.B. 5)'}
+              placeholder={produktEinheit === 'Gramm' ? 'Basis-Menge g (z.B. 10)' : 'Max. Stückzahl (z.B. 5)'}
               value={produktMengen} onChange={e => setProduktMengen(e.target.value)} style={inputStyle} />
-            <button onClick={produktHinzufuegen} style={{ ...t.btnPrimary, width: '100%' }}>
-              + HINZUFÜGEN
-            </button>
+            <button onClick={produktHinzufuegen} style={{
+              width: '100%', padding: '12px', background: C.accent, color: 'white',
+              border: 'none', borderRadius: '10px', cursor: 'pointer',
+              fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
+            }}>+ Hinzufügen</button>
           </div>
 
-          {produkte.length === 0 && <div style={{ color: '#333', fontSize: '12px', letterSpacing: '0.1em', textAlign: 'center', padding: '2rem' }}>— KEINE WAREN —</div>}
+          {produkte.length === 0 && <div style={{ color: C.textMuted, fontSize: '14px', textAlign: 'center', padding: '40px' }}>Keine Waren</div>}
           {produkte.map(p => (
-            <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid #2a2a2a', borderRadius: '4px', padding: '12px 16px', marginBottom: '6px', background: '#0d0d0d' }}>
+            <div key={p.id} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px',
+              padding: '14px 16px', marginBottom: '8px'
+            }}>
               <div>
-                <span style={{ color: '#e0e0e0', fontSize: '13px' }}>{p.name}</span>
-                {p.beschreibung && <span style={{ marginLeft: '8px', fontSize: '11px', color: '#555' }}>{p.beschreibung}</span>}
-                <span style={{ marginLeft: '8px', fontSize: '11px', color: '#333' }}>{p.einheit}</span>
-                {p.preis > 0 && <span style={{ marginLeft: '8px', fontSize: '12px', color: '#cc0000' }}>{p.preis.toFixed(2)} €</span>}
+                <span style={{ color: C.text, fontSize: '14px', fontWeight: '600' }}>{p.name}</span>
+                {p.beschreibung && <span style={{ marginLeft: '8px', fontSize: '12px', color: C.textDim }}>{p.beschreibung}</span>}
+                <div style={{ marginTop: '3px', fontSize: '12px', color: C.textDim }}>
+                  {p.einheit}
+                  {p.mengen && p.mengen.length > 0 && ` · ${p.einheit === 'Gramm' ? p.mengen[0] + 'g' : 'max ' + p.mengen[0] + ' Stk'}`}
+                  {p.preis > 0 && <span style={{ marginLeft: '8px', color: C.accent }}>{p.preis.toFixed(2)} €</span>}
+                </div>
               </div>
-              <button onClick={() => produktLoeschen(p.id)} style={t.btnDanger}>LÖSCHEN</button>
+              <button onClick={() => produktLoeschen(p.id)} style={{
+                padding: '6px 12px', background: C.accentDim, color: C.accent,
+                border: `1px solid ${C.accent}`, borderRadius: '8px', cursor: 'pointer',
+                fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
+              }}>Löschen</button>
             </div>
           ))}
         </div>
       )}
 
-      {/* Zeitfenster */}
+      {/* ZEITFENSTER */}
       {ansicht === 'zeitfenster' && (
         <div>
-          <div style={{ border: '1px solid #2a2a2a', borderRadius: '4px', padding: '1rem', marginBottom: '1.5rem', background: '#0d0d0d' }}>
-            <div style={{ fontSize: '10px', color: '#555', letterSpacing: '0.1em', marginBottom: '12px' }}>NEUEN SLOT ANLEGEN</div>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <input type="date" value={datum} onChange={e => setDatum(e.target.value)} style={{ ...selectStyle }} />
-              <select value={vonUhrzeit} onChange={e => setVonUhrzeit(e.target.value)} style={selectStyle}>
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+            <div style={{ fontSize: '12px', color: C.textDim, marginBottom: '12px', letterSpacing: '0.08em' }}>NEUER SLOT</div>
+            <input type="date" value={datum} onChange={e => setDatum(e.target.value)}
+              style={{ ...inputStyle, marginBottom: '8px' }} />
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+              <select value={vonUhrzeit} onChange={e => setVonUhrzeit(e.target.value)} style={{ ...selectStyle, flex: 1 }}>
                 <option value="">Von</option>
                 {uhrzeiten.map(u => <option key={u} value={u}>{u}</option>)}
               </select>
-              <span style={{ color: '#555' }}>—</span>
-              <select value={bisUhrzeit} onChange={e => setBisUhrzeit(e.target.value)} style={selectStyle}>
+              <span style={{ color: C.textDim, alignSelf: 'center' }}>—</span>
+              <select value={bisUhrzeit} onChange={e => setBisUhrzeit(e.target.value)} style={{ ...selectStyle, flex: 1 }}>
                 <option value="">Bis</option>
                 {uhrzeiten.map(u => <option key={u} value={u}>{u}</option>)}
               </select>
-              <button onClick={zeitfensterHinzufuegen} style={t.btnPrimary}>+ SLOT</button>
+            </div>
+            <div style={{ marginBottom: '8px' }}>
+              <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '6px' }}>MAX. BESTELLUNGEN</div>
+              <select value={maxBestellungen} onChange={e => setMaxBestellungen(parseInt(e.target.value))}
+                style={{ ...selectStyle, width: '100%' }}>
+                {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} Bestellungen</option>)}
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={zeitfensterHinzufuegen} style={{
+                flex: 1, padding: '12px', background: C.accent, color: 'white',
+                border: 'none', borderRadius: '10px', cursor: 'pointer',
+                fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
+              }}>+ Slot anlegen</button>
+              <button onClick={letztenTagKopieren} style={{
+                flex: 1, padding: '12px', background: C.card2, color: C.textDim,
+                border: `1px solid ${C.border}`, borderRadius: '10px', cursor: 'pointer',
+                fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
+              }}>📋 Letzten Tag kopieren</button>
             </div>
           </div>
 
-          {Object.keys(datumsGruppen).length === 0 && <div style={{ color: '#333', fontSize: '12px', letterSpacing: '0.1em', textAlign: 'center', padding: '2rem' }}>— KEINE SLOTS —</div>}
+          {Object.keys(datumsGruppen).length === 0 && <div style={{ color: C.textMuted, textAlign: 'center', padding: '40px' }}>Keine Slots</div>}
           {Object.entries(datumsGruppen).map(([d, slots]) => (
-            <div key={d} style={{ marginBottom: '1.5rem' }}>
-              <div style={{ fontSize: '10px', color: '#555', letterSpacing: '0.1em', marginBottom: '8px' }}>
+            <div key={d} style={{ marginBottom: '20px' }}>
+              <div style={{ fontSize: '12px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '8px' }}>
                 📅 {datumFormatieren(d)}
               </div>
               {slots.map(z => {
                 const belegung = belegungZaehlen(z.id)
                 return (
-                  <div key={z.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid #2a2a2a', borderRadius: '4px', padding: '10px 14px', marginBottom: '4px', background: '#0d0d0d' }}>
+                  <div key={z.id} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    background: C.card, border: `1px solid ${C.border}`, borderRadius: '10px',
+                    padding: '12px 14px', marginBottom: '6px'
+                  }}>
                     <div>
-                      <span style={{ color: '#e0e0e0', fontSize: '13px' }}>{z.uhrzeit}</span>
-                      <span style={{ marginLeft: '12px', fontSize: '11px', color: belegung >= z.max_bestellungen ? '#cc0000' : '#00aa44' }}>
-                        {belegung}/{z.max_bestellungen}
+                      <span style={{ color: C.text, fontSize: '14px', fontWeight: '600' }}>{z.uhrzeit}</span>
+                      <span style={{ marginLeft: '12px', fontSize: '12px', color: belegung >= z.max_bestellungen ? C.accent : C.green }}>
+                        {belegung}/{z.max_bestellungen} belegt
                       </span>
                     </div>
-                    <button onClick={() => zeitfensterLoeschen(z.id)} style={t.btnDanger}>LÖSCHEN</button>
+                    <button onClick={() => zeitfensterLoeschen(z.id)} style={{
+                      padding: '6px 12px', background: C.accentDim, color: C.accent,
+                      border: `1px solid ${C.accent}`, borderRadius: '8px', cursor: 'pointer',
+                      fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
+                    }}>Löschen</button>
                   </div>
                 )
               })}
@@ -453,72 +597,116 @@ function Lieferer() {
         </div>
       )}
 
-      {/* Paketstationen */}
+      {/* PAKETSTATIONEN */}
       {ansicht === 'paketstationen' && (
         <div>
-          <div style={{ border: '1px solid #2a2a2a', borderRadius: '4px', padding: '1rem', marginBottom: '1.5rem', background: '#0d0d0d' }}>
-            <div style={{ fontSize: '10px', color: '#555', letterSpacing: '0.1em', marginBottom: '12px' }}>NEUE PAKETBOX</div>
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+            <div style={{ fontSize: '12px', color: C.textDim, marginBottom: '12px', letterSpacing: '0.08em' }}>NEUE PAKETBOX</div>
             <input type="text" placeholder="Name (z.B. Box A)" value={neuerName} onChange={e => setNeuerName(e.target.value)} style={inputStyle} />
             <input type="text" placeholder="Adresse" value={neueAdresse} onChange={e => setNeueAdresse(e.target.value)} style={inputStyle} />
-            <button onClick={pakietstationHinzufuegen} style={{ ...t.btnPrimary, width: '100%' }}>+ HINZUFÜGEN</button>
+            <button onClick={pakietstationHinzufuegen} style={{
+              width: '100%', padding: '12px', background: C.accent, color: 'white',
+              border: 'none', borderRadius: '10px', cursor: 'pointer',
+              fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
+            }}>+ Hinzufügen</button>
           </div>
 
-          {paketstationen.length === 0 && <div style={{ color: '#333', fontSize: '12px', letterSpacing: '0.1em', textAlign: 'center', padding: '2rem' }}>— KEINE BOXEN —</div>}
+          {paketstationen.length === 0 && <div style={{ color: C.textMuted, textAlign: 'center', padding: '40px' }}>Keine Boxen</div>}
           {paketstationen.map(p => (
-            <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid #2a2a2a', borderRadius: '4px', padding: '12px 16px', marginBottom: '6px', background: '#0d0d0d' }}>
+            <div key={p.id} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px',
+              padding: '14px 16px', marginBottom: '8px'
+            }}>
               <div>
-                <span style={{ color: '#e0e0e0', fontSize: '13px' }}>{p.name}</span>
-                <span style={{ marginLeft: '8px', fontSize: '12px', color: '#555' }}>{p.adresse}</span>
+                <span style={{ color: C.text, fontSize: '14px', fontWeight: '600' }}>{p.name}</span>
+                <span style={{ marginLeft: '8px', fontSize: '13px', color: C.textDim }}>{p.adresse}</span>
               </div>
-              <button onClick={() => pakietstationLoeschen(p.id)} style={t.btnDanger}>LÖSCHEN</button>
+              <button onClick={() => pakietstationLoeschen(p.id)} style={{
+                padding: '6px 12px', background: C.accentDim, color: C.accent,
+                border: `1px solid ${C.accent}`, borderRadius: '8px', cursor: 'pointer',
+                fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
+              }}>Löschen</button>
             </div>
           ))}
         </div>
       )}
 
-      {/* Zugänge */}
+      {/* ZUGÄNGE */}
       {ansicht === 'zugaenge' && (
         <div>
-          <button onClick={tokenErstellen} style={{ ...t.btnPrimary, marginBottom: '1.5rem' }}>
-            + NEUEN ZUGANG ERSTELLEN
-          </button>
+          <button onClick={tokenErstellen} style={{
+            width: '100%', padding: '14px', background: C.accent, color: 'white',
+            border: 'none', borderRadius: '12px', cursor: 'pointer', marginBottom: '16px',
+            fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
+          }}>+ Neuen Zugang erstellen</button>
 
           {neuerToken && (
-            <div style={{ border: '1px solid #00aa44', borderRadius: '4px', padding: '1rem', marginBottom: '1.5rem', background: '#001a0d' }}>
-              <div style={{ fontSize: '10px', color: '#00aa44', letterSpacing: '0.1em', marginBottom: '8px' }}>✓ NEUER ZUGANG — LINK WEITERGEBEN</div>
-              <div style={{ background: '#0d0d0d', borderRadius: '4px', padding: '10px', fontSize: '11px', wordBreak: 'break-all', marginBottom: '8px', color: '#555', border: '1px solid #2a2a2a' }}>
+            <div style={{ background: C.greenDim, border: `1px solid ${C.green}`, borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '12px', color: C.green, marginBottom: '8px' }}>✓ Neuer Zugang — Link weitergeben</div>
+              <div style={{ background: C.card, borderRadius: '8px', padding: '10px', fontSize: '12px', wordBreak: 'break-all', marginBottom: '10px', color: C.textDim }}>
                 {qrUrl(neuerToken.token)}
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => { navigator.clipboard.writeText(qrUrl(neuerToken.token)); alert('Kopiert!') }} style={t.btnPrimary}>
-                  KOPIEREN
-                </button>
-                <button onClick={() => setNeuerToken(null)} style={t.btnGhost}>SCHLIESSEN</button>
+                <button onClick={() => { navigator.clipboard.writeText(qrUrl(neuerToken.token)); alert('Kopiert!') }} style={{
+                  flex: 1, padding: '10px', background: C.accent, color: 'white', border: 'none',
+                  borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
+                }}>Kopieren</button>
+                <button onClick={() => setNeuerToken(null)} style={{
+                  padding: '10px 16px', background: C.card2, color: C.textDim,
+                  border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer',
+                  fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
+                }}>Schließen</button>
               </div>
             </div>
           )}
 
-          {tokens.length === 0 && <div style={{ color: '#333', fontSize: '12px', letterSpacing: '0.1em', textAlign: 'center', padding: '2rem' }}>— KEINE ZUGÄNGE —</div>}
-          {tokens.map(t2 => (
-            <div key={t2.id} style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              border: '1px solid #2a2a2a', borderRadius: '4px', padding: '12px 16px',
-              marginBottom: '6px', background: '#0d0d0d', opacity: t2.aktiv ? 1 : 0.4
-            }}>
-              <div>
-                {t2.pseudonym && <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '2px' }}>{t2.pseudonym}</div>}
-                <div style={{ fontSize: '11px', color: '#555' }}>
-                  {t2.zuletzt_genutzt ? 'Zuletzt: ' + new Date(t2.zuletzt_genutzt).toLocaleString('de-DE') : 'Noch nie genutzt'}
-                </div>
-                {!t2.aktiv && <div style={{ fontSize: '10px', color: '#cc0000', letterSpacing: '0.1em', marginTop: '2px' }}>GESPERRT</div>}
-              </div>
-              <button onClick={() => tokenSperren(t2.id)} disabled={!t2.aktiv} style={{
-                ...t.btnDanger, opacity: t2.aktiv ? 1 : 0.3, cursor: t2.aktiv ? 'pointer' : 'default'
+          {/* Token Filter */}
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
+            {[
+              { key: 'alle', label: `Alle (${tokens.length})` },
+              { key: 'inaktiv', label: `⚠ Inaktiv (${tokens.filter(t => tokenIstInaktiv(t)).length})` },
+            ].map(f => (
+              <button key={f.key} onClick={() => setTokenFilter(f.key)} style={{
+                padding: '8px 14px', fontSize: '12px',
+                background: tokenFilter === f.key ? C.accent : C.card,
+                color: tokenFilter === f.key ? 'white' : C.textDim,
+                border: `1px solid ${tokenFilter === f.key ? C.accent : C.border}`,
+                borderRadius: '8px', cursor: 'pointer', fontFamily: 'Share Tech Mono, monospace'
+              }}>{f.label}</button>
+            ))}
+          </div>
+
+          {gefilterteTokens.length === 0 && <div style={{ color: C.textMuted, textAlign: 'center', padding: '40px' }}>Keine Zugänge</div>}
+          {gefilterteTokens.map(t => {
+            const inaktiv = tokenIstInaktiv(t)
+            return (
+              <div key={t.id} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: C.card, border: `1px solid ${inaktiv ? C.yellow : C.border}`,
+                borderRadius: '12px', padding: '14px 16px', marginBottom: '8px',
+                opacity: t.aktiv ? 1 : 0.5
               }}>
-                SPERREN
-              </button>
-            </div>
-          ))}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+                    {inaktiv && <span style={{ fontSize: '14px' }}>⚠️</span>}
+                    <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{t.pseudonym || 'Noch nicht genutzt'}</span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: C.textDim }}>
+                    {t.zuletzt_genutzt ? 'Zuletzt: ' + new Date(t.zuletzt_genutzt).toLocaleString('de-DE') : 'Noch nie genutzt'}
+                  </div>
+                  {!t.aktiv && <div style={{ fontSize: '11px', color: C.accent, marginTop: '2px' }}>GESPERRT</div>}
+                </div>
+                <button onClick={() => tokenSperren(t.id)} disabled={!t.aktiv} style={{
+                  padding: '8px 14px', background: t.aktiv ? C.accentDim : C.card2,
+                  color: t.aktiv ? C.accent : C.textMuted,
+                  border: `1px solid ${t.aktiv ? C.accent : C.border}`,
+                  borderRadius: '8px', cursor: t.aktiv ? 'pointer' : 'default',
+                  fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
+                }}>Sperren</button>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

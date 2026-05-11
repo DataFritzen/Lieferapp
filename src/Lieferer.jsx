@@ -35,14 +35,6 @@ const selectStyle = {
   fontFamily: 'Share Tech Mono, monospace', outline: 'none',
 }
 
-function StarIcon({ size = 14, color = '#c8a96e' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-    </svg>
-  )
-}
-
 function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, onLoeschen, onPaketstation, onStornieren }) {
   const [messengerOffen, setMessengerOffen] = useState(false)
   const [hatNachrichten, setHatNachrichten] = useState(false)
@@ -60,28 +52,36 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
     })
   }, [b.id])
 
-  const statusColor = istStorniert ? C.redBright : b.status === 'bestätigt' ? C.green : b.status === 'ausgestellt' ? C.blue : C.gold
-  const statusBg = istStorniert ? C.redDim : b.status === 'bestätigt' ? C.greenDim : b.status === 'ausgestellt' ? C.blueDim : C.goldDim
-  const statusText = istStorniert ? 'STORNIERT' : b.status === 'offen' ? 'OFFEN' : b.status === 'bestätigt' ? 'BESTÄTIGT' : 'AUSGESTELLT'
+  // Original-Status Farbe (ohne Storniert)
+  const originalStatus = b.status === 'storniert' ? (b.original_status || 'offen') : b.status
+  const statusColor = originalStatus === 'bestätigt' ? C.green : originalStatus === 'ausgestellt' ? C.blue : C.gold
+  const statusBg = originalStatus === 'bestätigt' ? C.greenDim : originalStatus === 'ausgestellt' ? C.blueDim : C.goldDim
+  const statusText = originalStatus === 'offen' ? 'OFFEN' : originalStatus === 'bestätigt' ? 'BESTÄTIGT' : 'AUSGESTELLT'
 
   return (
     <div style={{
       background: C.card, borderRadius: '14px',
-      border: `1px solid ${istStorniert ? C.redBright : C.border}`,
-      borderLeft: `4px solid ${statusColor}`,
+      border: `1px solid ${istStorniert ? C.red : C.border}`,
+      borderLeft: `4px solid ${istStorniert ? C.redBright : statusColor}`,
       padding: '16px', marginBottom: '12px',
-      opacity: istStorniert ? 0.75 : 1
     }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <StarIcon color={statusColor} size={12} />
           <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{b.pseudonym}</span>
         </div>
-        <span style={{
-          fontSize: '10px', padding: '3px 10px', borderRadius: '20px', letterSpacing: '0.1em',
-          background: statusBg, color: statusColor, border: `1px solid ${statusColor}`
-        }}>{statusText}</span>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          {istStorniert && (
+            <span style={{
+              fontSize: '10px', padding: '3px 10px', borderRadius: '20px', letterSpacing: '0.1em',
+              background: C.redDim, color: C.redBright, border: `1px solid ${C.red}`
+            }}>STORNIERT</span>
+          )}
+          <span style={{
+            fontSize: '10px', padding: '3px 10px', borderRadius: '20px', letterSpacing: '0.1em',
+            background: statusBg, color: statusColor, border: `1px solid ${statusColor}`
+          }}>{statusText}</span>
+        </div>
       </div>
 
       {/* Waren */}
@@ -122,7 +122,7 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
         </div>
       )}
 
-      {/* Paketbox */}
+      {/* Paketbox — nur wenn nicht storniert */}
       {!istStorniert && (
         <div style={{ marginBottom: '12px' }}>
           <select value={b.paketstation_id || ''} onChange={e => onPaketstation(b.id, e.target.value)}
@@ -155,53 +155,50 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
       )}
 
       {/* Aktionen */}
-      {!istStorniert && (
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {b.status === 'offen' && (
-            <>
-              <button onClick={() => onStatus(b.id, 'bestätigt')} style={{
-                flex: 1, padding: '12px', background: C.greenDim, color: C.green,
-                border: `1px solid ${C.green}`, borderRadius: '10px', cursor: 'pointer',
-                fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
-              }}>✓ Bestätigen</button>
-              <button onClick={() => onStornieren(b.id)} style={{
-                padding: '12px 14px', background: C.redDim, color: C.redBright,
-                border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
-                fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
-              }}>Stornieren</button>
-            </>
-          )}
-          {b.status === 'bestätigt' && (
-            <>
-              <button onClick={() => onStatus(b.id, 'ausgestellt')} style={{
-                flex: 1, padding: '12px', background: C.blueDim, color: C.blue,
-                border: `1px solid ${C.blue}`, borderRadius: '10px', cursor: 'pointer',
-                fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
-              }}>📦 Ausgestellt</button>
-              <button onClick={() => onStornieren(b.id)} style={{
-                padding: '12px 14px', background: C.redDim, color: C.redBright,
-                border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
-                fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
-              }}>Stornieren</button>
-            </>
-          )}
-          {b.status === 'ausgestellt' && (
-            <button onClick={() => onLoeschen(b.id)} style={{
-              flex: 1, padding: '12px', background: C.redDim, color: C.redBright,
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {!istStorniert && b.status === 'offen' && (
+          <>
+            <button onClick={() => onStatus(b.id, 'bestätigt')} style={{
+              flex: 1, padding: '12px', background: C.greenDim, color: C.green,
+              border: `1px solid ${C.green}`, borderRadius: '10px', cursor: 'pointer',
+              fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
+            }}>✓ Bestätigen</button>
+            <button onClick={() => onStornieren(b.id)} style={{
+              padding: '12px 14px', background: C.redDim, color: C.redBright,
               border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
-              fontSize: '14px', fontFamily: 'Share Tech Mono, monospace'
-            }}>🗑 Löschen</button>
-          )}
-        </div>
-      )}
-
-      {istStorniert && (
-        <button onClick={() => onLoeschen(b.id)} style={{
-          width: '100%', padding: '12px', background: C.redDim, color: C.redBright,
-          border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
-          fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
-        }}>🗑 Endgültig löschen</button>
-      )}
+              fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
+            }}>Stornieren</button>
+          </>
+        )}
+        {!istStorniert && b.status === 'bestätigt' && (
+          <>
+            <button onClick={() => onStatus(b.id, 'ausgestellt')} style={{
+              flex: 1, padding: '12px', background: C.blueDim, color: C.blue,
+              border: `1px solid ${C.blue}`, borderRadius: '10px', cursor: 'pointer',
+              fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
+            }}>📦 Ausgestellt</button>
+            <button onClick={() => onStornieren(b.id)} style={{
+              padding: '12px 14px', background: C.redDim, color: C.redBright,
+              border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
+              fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
+            }}>Stornieren</button>
+          </>
+        )}
+        {!istStorniert && b.status === 'ausgestellt' && (
+          <button onClick={() => onLoeschen(b.id)} style={{
+            flex: 1, padding: '12px', background: C.redDim, color: C.redBright,
+            border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
+            fontSize: '14px', fontFamily: 'Share Tech Mono, monospace'
+          }}>🗑 Löschen</button>
+        )}
+        {istStorniert && (
+          <button onClick={() => onLoeschen(b.id)} style={{
+            flex: 1, padding: '12px', background: C.redDim, color: C.redBright,
+            border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
+            fontSize: '14px', fontFamily: 'Share Tech Mono, monospace'
+          }}>🗑 Endgültig löschen</button>
+        )}
+      </div>
     </div>
   )
 }
@@ -230,11 +227,11 @@ function Lieferer() {
   const [produktMengen, setProduktMengen] = useState('')
 
   const uhrzeiten = [
-    '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
-    '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
-    '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
-    '19:00', '19:30', '20:00', '20:30', '21:00'
+    '07:00','07:30','08:00','08:30','09:00','09:30',
+    '10:00','10:30','11:00','11:30','12:00','12:30',
+    '13:00','13:30','14:00','14:30','15:00','15:30',
+    '16:00','16:30','17:00','17:30','18:00','18:30',
+    '19:00','19:30','20:00','20:30','21:00'
   ]
 
   async function ladeProdukte() {
@@ -329,9 +326,14 @@ function Lieferer() {
   }
 
   async function bestellungStornieren(id) {
+    const b = bestellungen.find(b => b.id === id)
     const ok = window.confirm('Bestellung stornieren?')
     if (!ok) return
-    await supabase.from('bestellungen').update({ status: 'storniert', storniert_am: new Date().toISOString() }).eq('id', id)
+    await supabase.from('bestellungen').update({
+      status: 'storniert',
+      original_status: b?.status || 'offen',
+      storniert_am: new Date().toISOString()
+    }).eq('id', id)
     ladeAlles()
   }
 
@@ -396,13 +398,19 @@ function Lieferer() {
   if (laden) return <div style={{ padding: '2rem', color: C.textMuted, background: C.bg, minHeight: '100vh' }}>Laden...</div>
 
   const datumsGruppen = gruppiereNachDatum()
+  const heute = new Date()
+  heute.setHours(0, 0, 0, 0)
+
   const gefilterteBestellungen = bestellungen.filter(b =>
-    bestellFilter === 'alle' ? true : bestellFilter === 'storniert' ? b.status === 'storniert' : b.status === bestellFilter
+    bestellFilter === 'alle' ? true :
+    bestellFilter === 'storniert' ? b.status === 'storniert' :
+    b.status === bestellFilter
   )
+
   const gefilterteTokens = tokens.filter(t => tokenFilter === 'inaktiv' ? tokenIstInaktiv(t) : true)
 
   const tabs = [
-    { key: 'bestellungen', label: `Aufträge (${bestellungen.filter(b => !['storniert', 'ausgestellt'].includes(b.status)).length})` },
+    { key: 'bestellungen', label: `Aufträge (${bestellungen.filter(b => !['ausgestellt'].includes(b.status)).length})` },
     { key: 'produkte', label: `Waren (${produkte.length})` },
     { key: 'zeitfenster', label: `Slots (${zeitfenster.length})` },
     { key: 'paketstationen', label: `Boxen (${paketstationen.length})` },
@@ -488,7 +496,7 @@ function Lieferer() {
                 style={{ ...selectStyle, flex: 1, width: 'auto' }} />
             </div>
             <input type="text"
-              placeholder={produktEinheit === 'Gramm' ? 'Mindestmenge g (z.B. 10)' : 'Max. Stückzahl (z.B. 5)'}
+              placeholder={produktEinheit === 'Gramm' ? 'Einheitsgröße g (z.B. 10)' : 'Einheitsgröße Stk (z.B. 5)'}
               value={produktMengen} onChange={e => setProduktMengen(e.target.value)} style={inputStyle} />
             <button onClick={produktHinzufuegen} style={{
               width: '100%', padding: '12px', background: C.gold, color: '#0f0f0f',
@@ -499,9 +507,8 @@ function Lieferer() {
 
           {produkte.length === 0 && <div style={{ color: C.textMuted, textAlign: 'center', padding: '40px' }}>Keine Waren</div>}
 
-          {/* Spalten Header */}
           {produkte.length > 0 && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: '8px', padding: '4px 16px', marginBottom: '4px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 80px 70px', gap: '8px', padding: '4px 16px', marginBottom: '4px' }}>
               <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>WARE</span>
               <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>EINHEIT</span>
               <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>PREIS</span>
@@ -511,7 +518,7 @@ function Lieferer() {
 
           {produkte.map(p => (
             <div key={p.id} style={{
-              display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: '12px', alignItems: 'center',
+              display: 'grid', gridTemplateColumns: '1fr 120px 80px 70px', gap: '8px', alignItems: 'center',
               background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px',
               padding: '14px 16px', marginBottom: '6px'
             }}>
@@ -551,10 +558,10 @@ function Lieferer() {
               </select>
             </div>
             <div style={{ marginBottom: '10px' }}>
-              <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '6px', letterSpacing: '0.08em' }}>MAX. BESTELLUNGEN PRO SLOT</div>
+              <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '6px', letterSpacing: '0.08em' }}>MAX. BESTELLUNGEN</div>
               <select value={maxBestellungen} onChange={e => setMaxBestellungen(parseInt(e.target.value))}
                 style={{ ...selectStyle, width: '100%' }}>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => <option key={n} value={n}>{n} Bestellungen</option>)}
+                {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -572,7 +579,9 @@ function Lieferer() {
           </div>
 
           {Object.keys(datumsGruppen).length === 0 && <div style={{ color: C.textMuted, textAlign: 'center', padding: '40px' }}>Keine Slots</div>}
-          {Object.entries(datumsGruppen).map(([d, slots]) => (
+          {Object.entries(datumsGruppen)
+            .filter(([d]) => new Date(d) >= heute)
+            .map(([d, slots]) => (
             <div key={d} style={{ marginBottom: '20px' }}>
               <div style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.1em', marginBottom: '8px' }}>
                 📅 {datumFormatieren(d)}
@@ -588,7 +597,7 @@ function Lieferer() {
                     <div>
                       <span style={{ color: C.text, fontSize: '14px', fontWeight: '600' }}>{z.uhrzeit}</span>
                       <span style={{ marginLeft: '12px', fontSize: '12px', color: belegung >= z.max_bestellungen ? C.redBright : C.green }}>
-                        {belegung}/{z.max_bestellungen} belegt
+                        {belegung}/{z.max_bestellungen}
                       </span>
                     </div>
                     <button onClick={() => zeitfensterLoeschen(z.id)} style={{

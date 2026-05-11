@@ -70,6 +70,8 @@ function PosterStatus({ status, bestaetigterSlot, paketstation }) {
           width: '180px', height: '180px',
           objectFit: 'cover', objectPosition: 'top',
           borderRadius: '50%', border: '2px solid #8b0000',
+          boxShadow: '0 0 0 6px #8b0000, 0 0 0 8px #3a0a0a',
+          background: '#8b0000',
           filter: 'contrast(1.1)', display: 'block', margin: '0 auto'
         }} />
       </div>
@@ -198,6 +200,7 @@ function Besteller({ token }) {
     if (!ok) return
     await supabase.from('bestellungen').update({
       status: 'storniert',
+      original_status: bestellStatus,
       storniert_am: new Date().toISOString()
     }).eq('id', bestellungId)
     localStorage.removeItem('aktive_bestellung')
@@ -290,12 +293,13 @@ function Besteller({ token }) {
           <div key={p.id} style={{
             background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px',
             padding: '14px 16px', marginBottom: '6px',
-            display: 'grid', gridTemplateColumns: '1fr 80px 130px', gap: '12px', alignItems: 'center'          }}>
+            display: 'grid', gridTemplateColumns: '1fr 80px 130px', gap: '12px', alignItems: 'center'
+          }}>
             {/* Name + Beschreibung */}
             <div>
               <div style={{ fontSize: '15px', color: C.text, fontWeight: '600' }}>{p.name}</div>
               {p.beschreibung && <div style={{ fontSize: '11px', color: C.textDim, marginTop: '2px' }}>{p.beschreibung}</div>}
-           </div>
+            </div>
 
             {/* Preis */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>

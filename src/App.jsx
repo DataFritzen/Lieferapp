@@ -67,7 +67,7 @@ function PosterStatus({ status, bestaetigterSlot, paketstation }) {
     }}>
       <div style={{ marginBottom: '8px', display: 'inline-block' }}>
         <img
-          src="/che.png"
+          src="/chebetsatige.png"
           alt="El Comandante"
           style={{
             width: '180px', height: '180px',
@@ -95,39 +95,41 @@ function PosterStatus({ status, bestaetigterSlot, paketstation }) {
         <div style={{ fontSize: '12px', color: '#c8a96e' }}>
           Der Comandante kümmert sich.
         </div>
-        <div style={{ fontSize: '11px', color: '#9a8a70', marginTop: '2px' }}>
+        <div style={{ fontSize: '11px', color: '#c8a96e', marginTop: '2px' }}>
           Bestätigung folgt in Kürze.
         </div>
       </div>
 
       {status === 'bestätigt' && (
         <div style={{
-          background: C.greenDim, border: `1px solid ${C.green}`,
+          background: C.goldDim, border: `1px solid ${C.gold}`,
           borderRadius: '12px', padding: '16px', textAlign: 'left', marginTop: '16px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <StarIcon color={C.green} size={14} />
-            <span style={{ fontSize: '12px', color: C.green, letterSpacing: '0.1em' }}>BESTÄTIGT</span>
+            <StarIcon color={C.red} size={14} />
+            <span style={{ fontSize: '12px', color: C.gold, letterSpacing: '0.1em' }}>BESTÄTIGT</span>
           </div>
           {bestaetigterSlot && (
             <div style={{ marginBottom: '10px' }}>
               <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '3px' }}>ZEITFENSTER</div>
-              <div style={{ fontSize: '16px', color: C.text, fontWeight: '600' }}>
-                {bestaetigterSlot.datum ? new Date(bestaetigterSlot.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + '  ·  ' : ''}
-                {bestaetigterSlot.uhrzeit}
-              </div>
-            </div>
-          )}
-          {paketstation && (
-            <div>
-              <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '3px' }}>ABHOLPUNKT</div>
               <div style={{ fontSize: '15px', color: C.text }}>📦 {paketstation.name}</div>
               <div style={{ fontSize: '13px', color: C.textDim }}>{paketstation.adresse}</div>
+              {bestaetigterSlot.datum ? new Date(bestaetigterSlot.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + '  ·  ' : ''}
+              {bestaetigterSlot.uhrzeit}
             </div>
-          )}
+            </div>
+      )}
+      {paketstation && (
+        <div>
+          <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '3px' }}>ABHOLPUNKT</div>
+          <div style={{ fontSize: '15px', color: C.text }}>📦 {paketstation.name}</div>
+          <div style={{ fontSize: '13px', color: C.textDim }}>{paketstation.adresse}</div>
         </div>
       )}
     </div>
+  )
+}
+    </div >
   )
 }
 
@@ -245,12 +247,14 @@ function Besteller({ token }) {
   if (gesendet) return (
     <div style={{ padding: '20px', maxWidth: '440px', margin: '0 auto', minHeight: '100vh', background: C.bg }}>
       <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <StarIcon color={C.gold} size={14} />
+        <StarIcon color={C.red} size={14} />
         <span style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.15em' }}>ORDEN DE ENTREGA</span>
       </div>
       <div style={{ fontSize: '12px', color: C.textDim, marginBottom: '24px' }}>ID: {pseudonym}</div>
 
-      <PosterStatus status={bestellStatus} bestaetigterSlot={bestaetigterSlot} paketstation={paketstation} />
+      {bestellStatus !== 'bestätigt' && (
+        <PosterStatus status={bestellStatus} bestaetigterSlot={bestaetigterSlot} paketstation={paketstation} />
+      )}/>
 
       <div style={{ marginBottom: '16px' }}>
         <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '10px' }}>KOMMUNIKATION</div>
@@ -273,7 +277,7 @@ function Besteller({ token }) {
       {/* Header */}
       <div style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: `1px solid ${C.border}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-          <StarIcon color={C.gold} size={14} />
+          <StarIcon color={C.red} size={14} />
           <span style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.15em' }}>ORDEN DE ENTREGA</span>
         </div>
         <div style={{ fontSize: '12px', color: C.textDim }}>ID: {pseudonym}</div>
@@ -303,7 +307,11 @@ function Besteller({ token }) {
             <div>
               <div style={{ fontSize: '15px', color: C.text, fontWeight: '600' }}>{p.name}</div>
               {p.beschreibung && <div style={{ fontSize: '11px', color: C.textDim, marginTop: '2px' }}>{p.beschreibung}</div>}
-            </div>
+              {p.mengen && p.mengen.length > 0 && (
+                <div style={{ fontSize: '11px', color: C.textMuted, marginTop: '2px' }}>
+                  mind. {p.mengen[0]} {p.einheit === 'Gramm' ? 'g' : 'Stk'}
+                </div>
+              )}            </div>
 
             {/* Preis */}
             <div style={{ fontSize: '13px', color: C.gold, textAlign: 'right', whiteSpace: 'nowrap' }}>
@@ -318,9 +326,9 @@ function Besteller({ token }) {
                 fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}>−</button>
               <span style={{ minWidth: '54px', textAlign: 'center', fontSize: '13px', color: auswahl[p.id] > 0 ? C.text : C.textMuted, fontWeight: '600' }}>
-                {p.einheit === 'Stück'
-                  ? `${auswahl[p.id] || 0} Stk`
-                  : `${auswahl[p.id] || 0}× ${p.mengen && p.mengen.length > 0 ? p.mengen[0] : '?'}g`
+                {p.mengen && p.mengen.length > 0
+                  ? `${auswahl[p.id] || 0}× ${p.mengen[0]}${p.einheit === 'Gramm' ? 'g' : ' Stk'}`
+                  : `${auswahl[p.id] || 0} ${p.einheit === 'Gramm' ? 'g' : 'Stk'}`
                 }
               </span>
               <button onClick={() => mengeAendern(p.id, (auswahl[p.id] || 0) + 1)} style={{

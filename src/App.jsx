@@ -65,23 +65,19 @@ function PosterStatus({ status, bestaetigterSlot, paketstation }) {
       borderRadius: '16px', padding: '24px', marginBottom: '20px',
       textAlign: 'center'
     }}>
-      <div style={{ marginBottom: '16px', position: 'relative', display: 'inline-block' }}>
+      <div style={{ marginBottom: '8px', display: 'inline-block' }}>
         <img
-          src="/chebestatige.png"
+          src="/che.png"
           alt="El Comandante"
           style={{
-            width: '180px',
-            height: '180px',
-            objectFit: 'cover',
-            objectPosition: 'top',
-            borderRadius: '50%',
-            border: '2px solid #8b0000',
-            filter: 'contrast(1.1)',
-            display: 'block',
-            margin: '0 auto'
+            width: '180px', height: '180px',
+            objectFit: 'cover', objectPosition: 'top',
+            borderRadius: '50%', border: '2px solid #8b0000',
+            filter: 'contrast(1.1)', display: 'block', margin: '0 auto'
           }}
         />
       </div>
+
       <div style={{
         background: '#8b0000', borderRadius: '12px', padding: '14px 16px',
         marginTop: '8px', position: 'relative'
@@ -103,65 +99,35 @@ function PosterStatus({ status, bestaetigterSlot, paketstation }) {
           Bestätigung folgt in Kürze.
         </div>
       </div>
-      {/* Background circle */}
-      <circle cx="100" cy="100" r="95" fill="#1a0500" stroke="#8b0000" strokeWidth="2" />
-      {/* Stylized face - simple geometric */}
-      <ellipse cx="100" cy="85" rx="38" ry="45" fill="#e8e0d0" />
-      {/* Beret */}
-      <ellipse cx="100" cy="48" rx="42" ry="16" fill="#1a1a1a" />
-      <ellipse cx="100" cy="45" rx="45" ry="10" fill="#111" />
-      {/* Star on beret */}
-      <polygon points="100,34 102,40 108,40 103,44 105,50 100,46 95,50 97,44 92,40 98,40" fill="#c8a96e" />
-      {/* Eyes */}
-      <ellipse cx="87" cy="82" rx="6" ry="7" fill="#1a1a1a" />
-      <ellipse cx="113" cy="82" rx="6" ry="7" fill="#1a1a1a" />
-      <circle cx="89" cy="80" r="2" fill="#e8e0d0" />
-      <circle cx="115" cy="80" r="2" fill="#e8e0d0" />
-      {/* Nose */}
-      <path d="M97 90 Q100 96 103 90" stroke="#8b8070" strokeWidth="1.5" fill="none" />
-      {/* Beard */}
-      <ellipse cx="100" cy="112" rx="22" ry="14" fill="#2a2520" />
-      <ellipse cx="100" cy="106" rx="15" ry="8" fill="#e8e0d0" />
-      {/* Mustache */}
-      <path d="M88 100 Q100 105 112 100" stroke="#2a2520" strokeWidth="3" fill="none" strokeLinecap="round" />
-      {/* Speech bubble */}
-      <rect x="0" y="148" width="200" height="52" rx="8" fill="#8b0000" />
-      <polygon points="85,148 100,136 115,148" fill="#8b0000" />
-      <text x="100" y="168" textAnchor="middle" fill="#e8e0d0" fontSize="9" fontFamily="Share Tech Mono">La revolución no espera.</text>
-      <text x="100" y="182" textAnchor="middle" fill="#c8a96e" fontSize="8" fontFamily="Share Tech Mono">Der Comandante kümmert sich.</text>
-      <text x="100" y="194" textAnchor="middle" fill="#e8e0d0" fontSize="7.5" fontFamily="Share Tech Mono">Bestätigung folgt in Kürze.</text>
-    </svg>
-      </div >
 
-    { status === 'bestätigt' && (
-      <div style={{
-        background: C.greenDim, border: `1px solid ${C.green}`,
-        borderRadius: '12px', padding: '16px', textAlign: 'left'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <StarIcon color={C.green} size={14} />
-          <span style={{ fontSize: '12px', color: C.green, letterSpacing: '0.1em' }}>BESTÄTIGT</span>
-        </div>
-        {bestaetigterSlot && (
-          <div style={{ marginBottom: '10px' }}>
-            <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '3px' }}>ZEITFENSTER</div>
-            <div style={{ fontSize: '16px', color: C.text, fontWeight: '600' }}>
-              {bestaetigterSlot.datum ? new Date(bestaetigterSlot.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + '  ·  ' : ''}
-              {bestaetigterSlot.uhrzeit}
+      {status === 'bestätigt' && (
+        <div style={{
+          background: C.greenDim, border: `1px solid ${C.green}`,
+          borderRadius: '12px', padding: '16px', textAlign: 'left', marginTop: '16px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <StarIcon color={C.green} size={14} />
+            <span style={{ fontSize: '12px', color: C.green, letterSpacing: '0.1em' }}>BESTÄTIGT</span>
+          </div>
+          {bestaetigterSlot && (
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '3px' }}>ZEITFENSTER</div>
+              <div style={{ fontSize: '16px', color: C.text, fontWeight: '600' }}>
+                {bestaetigterSlot.datum ? new Date(bestaetigterSlot.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + '  ·  ' : ''}
+                {bestaetigterSlot.uhrzeit}
+              </div>
             </div>
-          </div>
-        )}
-        {paketstation && (
-          <div>
-            <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '3px' }}>ABHOLPUNKT</div>
-            <div style={{ fontSize: '15px', color: C.text }}>📦 {paketstation.name}</div>
-            <div style={{ fontSize: '13px', color: C.textDim }}>{paketstation.adresse}</div>
-          </div>
-        )}
-      </div>
-    )
-}
-    </div >
+          )}
+          {paketstation && (
+            <div>
+              <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '3px' }}>ABHOLPUNKT</div>
+              <div style={{ fontSize: '15px', color: C.text }}>📦 {paketstation.name}</div>
+              <div style={{ fontSize: '13px', color: C.textDim }}>{paketstation.adresse}</div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 

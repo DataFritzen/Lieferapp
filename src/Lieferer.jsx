@@ -230,11 +230,11 @@ function Lieferer() {
   const [produktMengen, setProduktMengen] = useState('')
 
   const uhrzeiten = [
-    '07:00','07:30','08:00','08:30','09:00','09:30',
-    '10:00','10:30','11:00','11:30','12:00','12:30',
-    '13:00','13:30','14:00','14:30','15:00','15:30',
-    '16:00','16:30','17:00','17:30','18:00','18:30',
-    '19:00','19:30','20:00','20:30','21:00'
+    '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
+    '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
+    '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
+    '19:00', '19:30', '20:00', '20:30', '21:00'
   ]
 
   async function ladeProdukte() {
@@ -402,7 +402,7 @@ function Lieferer() {
   const gefilterteTokens = tokens.filter(t => tokenFilter === 'inaktiv' ? tokenIstInaktiv(t) : true)
 
   const tabs = [
-    { key: 'bestellungen', label: `Aufträge (${bestellungen.filter(b => !['storniert','ausgestellt'].includes(b.status)).length})` },
+    { key: 'bestellungen', label: `Aufträge (${bestellungen.filter(b => !['storniert', 'ausgestellt'].includes(b.status)).length})` },
     { key: 'produkte', label: `Waren (${produkte.length})` },
     { key: 'zeitfenster', label: `Slots (${zeitfenster.length})` },
     { key: 'paketstationen', label: `Boxen (${paketstationen.length})` },
@@ -520,7 +520,7 @@ function Lieferer() {
                 {p.beschreibung && <div style={{ fontSize: '11px', color: C.textDim, marginTop: '2px' }}>{p.beschreibung}</div>}
               </div>
               <span style={{ fontSize: '12px', color: C.textDim }}>
-                {p.einheit}{p.mengen && p.mengen.length > 0 ? ` · ${p.einheit === 'Gramm' ? p.mengen[0] + 'g' : 'max ' + p.mengen[0]}` : ''}
+                {p.einheit}{p.mengen && p.mengen.length > 0 ? ` · ${p.mengen[0]}${p.einheit === 'Gramm' ? 'g' : ' Stk'}` : ''}
               </span>
               <span style={{ fontSize: '13px', color: C.gold }}>{p.preis > 0 ? `${p.preis.toFixed(2)} €` : '—'}</span>
               <button onClick={() => produktLoeschen(p.id)} style={{
@@ -554,7 +554,7 @@ function Lieferer() {
               <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '6px', letterSpacing: '0.08em' }}>MAX. BESTELLUNGEN PRO SLOT</div>
               <select value={maxBestellungen} onChange={e => setMaxBestellungen(parseInt(e.target.value))}
                 style={{ ...selectStyle, width: '100%' }}>
-                {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} Bestellungen</option>)}
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => <option key={n} value={n}>{n} Bestellungen</option>)}
               </select>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>

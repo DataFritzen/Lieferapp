@@ -66,7 +66,7 @@ function PosterStatus({ status, bestaetigterSlot, paketstation }) {
       textAlign: 'center'
     }}>
       <div style={{ marginBottom: '8px', display: 'inline-block' }}>
-        <img src="/che.png" alt="El Comandante" style={{
+        <img src="/chebestatige.png" alt="El Comandante" style={{
           width: '180px', height: '180px',
           objectFit: 'cover', objectPosition: 'top',
           borderRadius: '50%', border: '2px solid #8b0000',
@@ -217,6 +217,34 @@ function Besteller({ token }) {
         <PosterStatus status={bestellStatus} bestaetigterSlot={bestaetigterSlot} paketstation={paketstation} />
       )}
 
+      {bestellStatus === 'bestätigt' && (
+        <div style={{
+          background: C.goldDim, border: `1px solid ${C.gold}`,
+          borderRadius: '14px', padding: '20px', marginBottom: '20px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <StarIcon color={C.red} size={14} />
+            <span style={{ fontSize: '12px', color: C.gold, letterSpacing: '0.1em' }}>BESTÄTIGT</span>
+          </div>
+          {bestaetigterSlot && (
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '4px' }}>ZEITFENSTER</div>
+              <div style={{ fontSize: '16px', color: C.text, fontWeight: '600' }}>
+                {bestaetigterSlot.datum ? new Date(bestaetigterSlot.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + '  ·  ' : ''}
+                {bestaetigterSlot.uhrzeit}
+              </div>
+            </div>
+          )}
+          {paketstation && (
+            <div>
+              <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '4px' }}>ABHOLPUNKT</div>
+              <div style={{ fontSize: '15px', color: C.text, fontWeight: '600' }}>📦 {paketstation.name}</div>
+              <div style={{ fontSize: '13px', color: C.gold }}>{paketstation.adresse}</div>
+            </div>
+          )}
+        </div>
+      )}
+
       <div style={{ marginBottom: '16px' }}>
         <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '10px' }}>KOMMUNIKATION</div>
         <Messenger bestellungId={bestellungId} pseudonym={pseudonym} />
@@ -262,20 +290,15 @@ function Besteller({ token }) {
           <div key={p.id} style={{
             background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px',
             padding: '14px 16px', marginBottom: '6px',
-            display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '12px', alignItems: 'center'
-          }}>
+            display: 'grid', gridTemplateColumns: '1fr 80px 130px', gap: '12px', alignItems: 'center'          }}>
             {/* Name + Beschreibung */}
             <div>
               <div style={{ fontSize: '15px', color: C.text, fontWeight: '600' }}>{p.name}</div>
               {p.beschreibung && <div style={{ fontSize: '11px', color: C.textDim, marginTop: '2px' }}>{p.beschreibung}</div>}
-              {p.mengen && p.mengen.length > 0 && (
-                <div style={{ fontSize: '11px', color: C.textMuted, marginTop: '2px' }}>
-                  mind. {p.mengen[0]} {p.einheit === 'Gramm' ? 'g' : 'Stk'}
-                </div>
-              )}            </div>
+           </div>
 
             {/* Preis */}
-            <div style={{ fontSize: '13px', color: C.gold, textAlign: 'right', whiteSpace: 'nowrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
               {p.preis > 0 ? `${p.preis.toFixed(2)} €` : '—'}
             </div>
 

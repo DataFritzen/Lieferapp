@@ -22,53 +22,115 @@ function getPseudonym(token) {
   return p
 }
 
+// Revolucion Palette
 const C = {
-  bg: '#080808',
-  card: '#141414',
-  card2: '#1a1a1a',
-  border: '#242424',
-  accent: '#e63030',
-  accentDim: '#3a0a0a',
-  green: '#22c55e',
-  greenDim: '#052010',
-  blue: '#3b82f6',
-  blueDim: '#0a1535',
-  text: '#d4d4d4',
-  textDim: '#666',
-  textMuted: '#3a3a3a',
+  bg: '#0f0f0f',
+  card: '#161616',
+  card2: '#1e1e1e',
+  border: '#2a2520',
+  gold: '#c8a96e',
+  goldDim: '#1a1508',
+  red: '#8b0000',
+  redBright: '#cc2200',
+  redDim: '#1a0500',
+  green: '#4a7c59',
+  greenDim: '#0a1a0f',
+  text: '#e8e0d0',
+  textDim: '#7a7060',
+  textMuted: '#3a3530',
 }
 
-const btn = (color = C.accent, bg = C.accentDim) => ({
-  padding: '14px 20px',
-  background: bg,
-  color: color,
-  border: `1px solid ${color}`,
-  borderRadius: '10px',
-  cursor: 'pointer',
-  fontSize: '14px',
-  fontFamily: 'Share Tech Mono, monospace',
-  letterSpacing: '0.05em',
-  width: '100%',
-  fontWeight: '600',
-})
-
 const inputStyle = {
-  width: '100%',
-  padding: '14px',
-  background: C.card,
-  border: `1px solid ${C.border}`,
-  borderRadius: '10px',
-  color: C.text,
-  fontSize: '15px',
+  width: '100%', padding: '14px 16px',
+  background: C.card, border: `1px solid ${C.border}`,
+  borderRadius: '10px', color: C.text, fontSize: '15px',
   fontFamily: 'Share Tech Mono, monospace',
-  marginBottom: '10px',
-  boxSizing: 'border-box',
-  outline: 'none',
+  marginBottom: '10px', boxSizing: 'border-box', outline: 'none',
+}
+
+// Revolucion Star SVG
+function StarIcon({ size = 16, color = '#c8a96e' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+    </svg>
+  )
+}
+
+// Status Illustration — Poster Style
+function PosterStatus({ status, bestaetigterSlot, paketstation }) {
+  return (
+    <div style={{
+      background: C.card, border: `1px solid ${C.border}`,
+      borderRadius: '16px', padding: '24px', marginBottom: '20px',
+      textAlign: 'center'
+    }}>
+      {/* Poster SVG */}
+      <div style={{ marginBottom: '16px' }}>
+        <svg viewBox="0 0 200 200" width="140" height="140" style={{ margin: '0 auto', display: 'block' }}>
+          {/* Background circle */}
+          <circle cx="100" cy="100" r="95" fill="#1a0500" stroke="#8b0000" strokeWidth="2"/>
+          {/* Stylized face - simple geometric */}
+          <ellipse cx="100" cy="85" rx="38" ry="45" fill="#e8e0d0"/>
+          {/* Beret */}
+          <ellipse cx="100" cy="48" rx="42" ry="16" fill="#1a1a1a"/>
+          <ellipse cx="100" cy="45" rx="45" ry="10" fill="#111"/>
+          {/* Star on beret */}
+          <polygon points="100,34 102,40 108,40 103,44 105,50 100,46 95,50 97,44 92,40 98,40" fill="#c8a96e"/>
+          {/* Eyes */}
+          <ellipse cx="87" cy="82" rx="6" ry="7" fill="#1a1a1a"/>
+          <ellipse cx="113" cy="82" rx="6" ry="7" fill="#1a1a1a"/>
+          <circle cx="89" cy="80" r="2" fill="#e8e0d0"/>
+          <circle cx="115" cy="80" r="2" fill="#e8e0d0"/>
+          {/* Nose */}
+          <path d="M97 90 Q100 96 103 90" stroke="#8b8070" strokeWidth="1.5" fill="none"/>
+          {/* Beard */}
+          <ellipse cx="100" cy="112" rx="22" ry="14" fill="#2a2520"/>
+          <ellipse cx="100" cy="106" rx="15" ry="8" fill="#e8e0d0"/>
+          {/* Mustache */}
+          <path d="M88 100 Q100 105 112 100" stroke="#2a2520" strokeWidth="3" fill="none" strokeLinecap="round"/>
+          {/* Speech bubble */}
+          <rect x="0" y="148" width="200" height="52" rx="8" fill="#8b0000"/>
+          <polygon points="85,148 100,136 115,148" fill="#8b0000"/>
+          <text x="100" y="168" textAnchor="middle" fill="#e8e0d0" fontSize="9" fontFamily="Share Tech Mono">La revolución no espera.</text>
+          <text x="100" y="182" textAnchor="middle" fill="#c8a96e" fontSize="8" fontFamily="Share Tech Mono">Der Comandante kümmert sich.</text>
+          <text x="100" y="194" textAnchor="middle" fill="#e8e0d0" fontSize="7.5" fontFamily="Share Tech Mono">Bestätigung folgt in Kürze.</text>
+        </svg>
+      </div>
+
+      {status === 'bestätigt' && (
+        <div style={{
+          background: C.greenDim, border: `1px solid ${C.green}`,
+          borderRadius: '12px', padding: '16px', textAlign: 'left'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <StarIcon color={C.green} size={14} />
+            <span style={{ fontSize: '12px', color: C.green, letterSpacing: '0.1em' }}>BESTÄTIGT</span>
+          </div>
+          {bestaetigterSlot && (
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '3px' }}>ZEITFENSTER</div>
+              <div style={{ fontSize: '16px', color: C.text, fontWeight: '600' }}>
+                {bestaetigterSlot.datum ? new Date(bestaetigterSlot.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + '  ·  ' : ''}
+                {bestaetigterSlot.uhrzeit}
+              </div>
+            </div>
+          )}
+          {paketstation && (
+            <div>
+              <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '3px' }}>ABHOLPUNKT</div>
+              <div style={{ fontSize: '15px', color: C.text }}>📦 {paketstation.name}</div>
+              <div style={{ fontSize: '13px', color: C.textDim }}>{paketstation.adresse}</div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function Besteller({ token }) {
   const pseudonym = getPseudonym(token)
-
   const [auswahl, setAuswahl] = useState({})
   const [telefon, setTelefon] = useState('')
   const [laden, setLaden] = useState(false)
@@ -95,11 +157,8 @@ function Besteller({ token }) {
     supabase.from('produkte').select('*').eq('aktiv', true).order('name').then(({ data }) => setProdukte(data || []))
 
     if (bestellungId) {
-      supabase
-        .from('bestellungen')
-        .select('id, status, paketstation_id, zeitfenster_id')
-        .eq('id', bestellungId)
-        .single()
+      supabase.from('bestellungen').select('id, status, paketstation_id, zeitfenster_id')
+        .eq('id', bestellungId).single()
         .then(async ({ data }) => {
           if (data) {
             setBestellStatus(data.status)
@@ -115,11 +174,9 @@ function Besteller({ token }) {
         })
 
       const interval = setInterval(async () => {
-        const { data } = await supabase
-          .from('bestellungen')
+        const { data } = await supabase.from('bestellungen')
           .select('id, status, paketstation_id, zeitfenster_id')
-          .eq('id', bestellungId)
-          .single()
+          .eq('id', bestellungId).single()
 
         if (data) {
           setBestellStatus(data.status)
@@ -132,18 +189,13 @@ function Besteller({ token }) {
             setBestaetigterSlot(slot)
           }
         }
-
         if (!data || data.status === 'ausgestellt') {
           localStorage.removeItem('aktive_bestellung')
-          setBestellungId(null)
-          setGesendet(false)
-          setAuswahl({})
-          setTelefon('')
-          setGewaehlterSlot(null)
+          setBestellungId(null); setGesendet(false)
+          setAuswahl({}); setTelefon(''); setGewaehlterSlot(null)
           clearInterval(interval)
         }
       }, 3000)
-
       return () => clearInterval(interval)
     }
   }, [bestellungId])
@@ -160,20 +212,14 @@ function Besteller({ token }) {
     const ausgewaehlt = Object.fromEntries(Object.entries(auswahl).filter(([_, m]) => m > 0))
     if (Object.keys(ausgewaehlt).length === 0) { alert('Bitte mindestens ein Produkt auswählen.'); return }
     if (!gewaehlterSlot) { alert('Bitte ein Zeitfenster auswählen.'); return }
-
     const { data: aktuelle } = await supabase.from('bestellungen').select('id').eq('zeitfenster_id', gewaehlterSlot.id)
     if (aktuelle.length >= gewaehlterSlot.max_bestellungen) { alert('Dieser Slot ist leider voll.'); return }
-
     setLaden(true)
     const verschluesselteDaten = verschluesseln({ produkte: ausgewaehlt, telefon: telefon || null })
     const { data: neu, error } = await supabase.from('bestellungen').insert([{
-      pseudonym,
-      produkte_verschluesselt: verschluesselteDaten,
-      status: 'offen',
-      zeitfenster_id: gewaehlterSlot.id
+      pseudonym, produkte_verschluesselt: verschluesselteDaten, status: 'offen', zeitfenster_id: gewaehlterSlot.id
     }]).select()
     setLaden(false)
-
     if (error) { alert('Fehler: ' + error.message); return }
     if (neu && neu.length > 0) {
       setBestellungId(neu[0].id)
@@ -185,70 +231,34 @@ function Besteller({ token }) {
   async function stornieren() {
     const ok = window.confirm('Bestellung wirklich stornieren?')
     if (!ok) return
-    // Storniert markieren statt löschen — Lieferer sieht es noch
     await supabase.from('bestellungen').update({
       status: 'storniert',
       storniert_am: new Date().toISOString()
     }).eq('id', bestellungId)
     localStorage.removeItem('aktive_bestellung')
-    setBestellungId(null)
-    setGesendet(false)
-    setAuswahl({})
-    setTelefon('')
-    setGewaehlterSlot(null)
+    setBestellungId(null); setGesendet(false)
+    setAuswahl({}); setTelefon(''); setGewaehlterSlot(null)
   }
-
-  const statusFarbe = bestellStatus === 'bestätigt' ? C.green : bestellStatus === 'storniert' ? '#ff4444' : C.textDim
 
   if (gesendet) return (
     <div style={{ padding: '20px', maxWidth: '440px', margin: '0 auto', minHeight: '100vh', background: C.bg }}>
-
-      {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{ fontSize: '11px', color: C.accent, letterSpacing: '0.12em', marginBottom: '4px' }}>BESTELLSYSTEM</div>
-        <div style={{ fontSize: '12px', color: C.textDim }}>ID: {pseudonym}</div>
+      <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <StarIcon color={C.gold} size={14} />
+        <span style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.15em' }}>ORDEN DE ENTREGA</span>
       </div>
+      <div style={{ fontSize: '12px', color: C.textDim, marginBottom: '24px' }}>ID: {pseudonym}</div>
 
-      {/* Status Card */}
-      {bestellStatus === 'offen' && (
-        <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '20px', marginBottom: '16px' }}>
-          <div style={{ fontSize: '12px', color: C.textDim, marginBottom: '8px', letterSpacing: '0.08em' }}>STATUS</div>
-          <div style={{ color: C.textDim, fontSize: '15px' }}>⏳ Warte auf Bestätigung...</div>
-        </div>
-      )}
+      <PosterStatus status={bestellStatus} bestaetigterSlot={bestaetigterSlot} paketstation={paketstation} />
 
-      {bestellStatus === 'bestätigt' && (
-        <div style={{ background: C.greenDim, border: `1px solid ${C.green}`, borderRadius: '14px', padding: '20px', marginBottom: '16px' }}>
-          <div style={{ fontSize: '12px', color: C.green, marginBottom: '12px', letterSpacing: '0.08em' }}>✓ BESTÄTIGT</div>
-          {bestaetigterSlot && (
-            <div style={{ marginBottom: '12px' }}>
-              <div style={{ fontSize: '11px', color: '#555', marginBottom: '3px' }}>ZEITFENSTER</div>
-              <div style={{ color: C.text, fontSize: '16px', fontWeight: '600' }}>
-                {bestaetigterSlot.datum ? new Date(bestaetigterSlot.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + ' · ' : ''}
-                {bestaetigterSlot.uhrzeit}
-              </div>
-            </div>
-          )}
-          {paketstation && (
-            <div>
-              <div style={{ fontSize: '11px', color: '#555', marginBottom: '3px' }}>ABHOLPUNKT</div>
-              <div style={{ color: C.text, fontSize: '15px' }}>📦 {paketstation.name}</div>
-              <div style={{ color: C.textDim, fontSize: '13px' }}>{paketstation.adresse}</div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Messenger */}
       <div style={{ marginBottom: '16px' }}>
-        <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '10px' }}>NACHRICHTEN</div>
+        <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '10px' }}>KOMMUNIKATION</div>
         <Messenger bestellungId={bestellungId} pseudonym={pseudonym} />
       </div>
 
-      {/* Stornieren */}
       <button onClick={stornieren} style={{
-        ...btn('#ff4444', '#1a0000'),
-        fontSize: '13px',
+        width: '100%', padding: '14px', background: C.redDim, color: C.redBright,
+        border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
+        fontSize: '13px', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.05em'
       }}>
         Bestellung stornieren
       </button>
@@ -260,43 +270,61 @@ function Besteller({ token }) {
 
       {/* Header */}
       <div style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ fontSize: '11px', color: C.accent, letterSpacing: '0.12em', marginBottom: '4px' }}>BESTELLSYSTEM</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+          <StarIcon color={C.gold} size={14} />
+          <span style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.15em' }}>ORDEN DE ENTREGA</span>
+        </div>
         <div style={{ fontSize: '12px', color: C.textDim }}>ID: {pseudonym}</div>
       </div>
 
       {/* Produkte */}
       <div style={{ marginBottom: '24px' }}>
-        <div style={{ fontSize: '12px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '12px' }}>WAREN AUSWÄHLEN</div>
-        {produkte.length === 0 && <div style={{ color: C.textMuted, fontSize: '14px', textAlign: 'center', padding: '20px' }}>Keine Produkte verfügbar</div>}
+        <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.1em', marginBottom: '12px' }}>WAREN AUSWÄHLEN</div>
+        {produkte.length === 0 && <div style={{ color: C.textMuted, fontSize: '14px', padding: '20px', textAlign: 'center' }}>Keine Produkte verfügbar</div>}
+
+        {/* Spalten-Header */}
+        {produkte.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: '8px', padding: '6px 16px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>WARE</span>
+            <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>PREIS</span>
+            <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em', minWidth: '110px', textAlign: 'center' }}>MENGE</span>
+          </div>
+        )}
+
         {produkte.map(p => (
           <div key={p.id} style={{
             background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px',
-            padding: '16px', marginBottom: '8px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            padding: '14px 16px', marginBottom: '6px',
+            display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '12px', alignItems: 'center'
           }}>
-            <div style={{ flex: 1 }}>
+            {/* Name + Beschreibung */}
+            <div>
               <div style={{ fontSize: '15px', color: C.text, fontWeight: '600' }}>{p.name}</div>
-              {p.beschreibung && <div style={{ fontSize: '12px', color: C.textDim, marginTop: '2px' }}>{p.beschreibung}</div>}
-              {p.preis > 0 && <div style={{ fontSize: '13px', color: C.accent, marginTop: '3px' }}>{p.preis.toFixed(2)} €</div>}
+              {p.beschreibung && <div style={{ fontSize: '11px', color: C.textDim, marginTop: '2px' }}>{p.beschreibung}</div>}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+
+            {/* Preis */}
+            <div style={{ fontSize: '13px', color: C.gold, textAlign: 'right', whiteSpace: 'nowrap' }}>
+              {p.preis > 0 ? `${p.preis.toFixed(2)} €` : '—'}
+            </div>
+
+            {/* Menge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button onClick={() => mengeAendern(p.id, (auswahl[p.id] || 0) - 1)} style={{
-                width: '36px', height: '36px', background: C.card2, color: C.text,
+                width: '34px', height: '34px', background: C.card2, color: C.text,
                 border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer',
-                fontSize: '18px', fontFamily: 'Share Tech Mono, monospace',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}>−</button>
-              <span style={{ minWidth: '52px', textAlign: 'center', fontSize: '14px', color: auswahl[p.id] > 0 ? C.text : C.textMuted, fontWeight: '600' }}>
+              <span style={{ minWidth: '54px', textAlign: 'center', fontSize: '13px', color: auswahl[p.id] > 0 ? C.text : C.textMuted, fontWeight: '600' }}>
                 {p.einheit === 'Stück'
                   ? `${auswahl[p.id] || 0} Stk`
-                  : `${auswahl[p.id] || 0}x ${p.mengen && p.mengen.length > 0 ? p.mengen[0] : '?'}g`
+                  : `${auswahl[p.id] || 0}× ${p.mengen && p.mengen.length > 0 ? p.mengen[0] : '?'}g`
                 }
               </span>
               <button onClick={() => mengeAendern(p.id, (auswahl[p.id] || 0) + 1)} style={{
-                width: '36px', height: '36px', background: C.card2, color: C.text,
+                width: '34px', height: '34px', background: C.card2, color: C.text,
                 border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer',
-                fontSize: '18px', fontFamily: 'Share Tech Mono, monospace',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}>+</button>
             </div>
           </div>
@@ -305,19 +333,19 @@ function Besteller({ token }) {
 
       {/* Zeitfenster */}
       <div style={{ marginBottom: '24px' }}>
-        <div style={{ fontSize: '12px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '12px' }}>
-          WÄHLE DEIN ZEITFENSTER AUS
+        <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.1em', marginBottom: '12px' }}>
+          WÄHLE DEIN ZEITFENSTER AUS ↓
         </div>
-        {zeitfenster.length === 0 && <div style={{ color: C.textMuted, fontSize: '14px', textAlign: 'center', padding: '20px' }}>Keine Zeitfenster verfügbar</div>}
+        {zeitfenster.length === 0 && <div style={{ color: C.textMuted, fontSize: '14px', padding: '20px', textAlign: 'center' }}>Keine Zeitfenster verfügbar</div>}
         {zeitfenster.filter(z => {
           const jetzt = new Date()
           if (z.datum && z.uhrzeit) {
-            const bisUhrzeit = z.uhrzeit.split('-')[1]?.trim()
-            if (bisUhrzeit) {
-              const [stunden, minuten] = bisUhrzeit.split(':').map(Number)
-              const slotEnde = new Date(z.datum)
-              slotEnde.setHours(stunden, minuten, 0)
-              if (slotEnde < jetzt) return false
+            const bis = z.uhrzeit.split('-')[1]?.trim()
+            if (bis) {
+              const [h, m] = bis.split(':').map(Number)
+              const ende = new Date(z.datum)
+              ende.setHours(h, m, 0)
+              if (ende < jetzt) return false
             }
           }
           return belegung(z.id) < z.max_bestellungen
@@ -325,19 +353,16 @@ function Besteller({ token }) {
           const gewaehlt = gewaehlterSlot?.id === z.id
           return (
             <button key={z.id} onClick={() => setGewaehlterSlot(z)} style={{
-              display: 'block', width: '100%', padding: '16px', marginBottom: '8px',
-              border: `1px solid ${gewaehlt ? C.accent : C.border}`,
-              borderRadius: '12px',
-              background: gewaehlt ? C.accentDim : C.card,
-              color: gewaehlt ? C.accent : C.text,
-              cursor: 'pointer', textAlign: 'left', fontSize: '15px',
-              fontFamily: 'Share Tech Mono, monospace',
-              fontWeight: gewaehlt ? '600' : '400',
-              transition: 'all 0.15s'
+              display: 'block', width: '100%', padding: '14px 16px', marginBottom: '6px',
+              border: `1px solid ${gewaehlt ? C.gold : C.border}`,
+              borderRadius: '10px', background: gewaehlt ? C.goldDim : C.card,
+              color: gewaehlt ? C.gold : C.text,
+              cursor: 'pointer', textAlign: 'left', fontSize: '14px',
+              fontFamily: 'Share Tech Mono, monospace', fontWeight: gewaehlt ? '600' : '400',
             }}>
               {z.datum ? new Date(z.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + '  ·  ' : ''}
               {z.uhrzeit}
-              {gewaehlt && <span style={{ float: 'right', fontSize: '16px' }}>✓</span>}
+              {gewaehlt && <span style={{ float: 'right' }}>✓</span>}
             </button>
           )
         })}
@@ -345,20 +370,18 @@ function Besteller({ token }) {
 
       {/* Telefon */}
       <div style={{ marginBottom: '24px' }}>
-        <div style={{ fontSize: '12px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '10px' }}>TELEFON (OPTIONAL)</div>
-        <input type="tel" placeholder="Deine Nummer" value={telefon}
-          onChange={e => setTelefon(e.target.value)} style={inputStyle} />
+        <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.1em', marginBottom: '10px' }}>TELEFON (OPTIONAL)</div>
+        <input type="tel" placeholder="Deine Nummer" value={telefon} onChange={e => setTelefon(e.target.value)} style={inputStyle} />
       </div>
 
-      {/* Bestellen */}
       <button onClick={bestellenKlick} disabled={laden} style={{
-        ...btn('white', laden ? '#2a0000' : C.accent),
-        border: 'none',
-        fontSize: '15px',
-        padding: '16px',
+        width: '100%', padding: '16px', background: laden ? C.redDim : C.red,
+        color: C.text, border: 'none', borderRadius: '12px',
+        fontSize: '15px', cursor: laden ? 'not-allowed' : 'pointer',
+        letterSpacing: '0.1em', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600',
         opacity: laden ? 0.6 : 1,
       }}>
-        {laden ? 'Wird übertragen...' : 'Bestellung absenden'}
+        {laden ? 'Übertragung läuft...' : 'Bestellung absenden'}
       </button>
     </div>
   )
@@ -383,16 +406,11 @@ function App() {
     init()
   }, [])
 
-  if (!tokenGeprueft) return (
-    <div style={{ padding: '2rem', color: '#333', fontSize: '12px', background: '#080808', minHeight: '100vh' }}>
-      Laden...
-    </div>
-  )
-  if (!tokenData) return <div style={{ background: '#080808', minHeight: '100vh' }}></div>
+  if (!tokenGeprueft) return <div style={{ background: C.bg, minHeight: '100vh' }} />
+  if (!tokenData) return <div style={{ background: C.bg, minHeight: '100vh' }} />
   if (tokenData.rolle === 'lieferer') return <Lieferer />
   if (tokenData.rolle === 'besteller') return <Besteller token={getTokenAusURL()} />
-
-  return <div style={{ padding: '2rem', color: '#e63030', background: '#080808', minHeight: '100vh' }}>Admin — in Entwicklung</div>
+  return <div style={{ padding: '2rem', color: C.gold, background: C.bg, minHeight: '100vh' }}>Admin — in Entwicklung</div>
 }
 
 export default App

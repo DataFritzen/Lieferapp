@@ -4,24 +4,23 @@ import Messenger from './Messenger'
 import { entschluesseln } from './crypto'
 
 const C = {
-  bg: '#0f0f0f',
-  card: '#161616',
-  card2: '#1e1e1e',
-  border: '#2a2520',
+  bg: '#130f0b',
+  card: '#1c1610',
+  card2: '#242018',
+  border: '#3a3020',
   gold: '#c8a96e',
   goldDim: '#1a1508',
   red: '#8b0000',
   redBright: '#cc2200',
-  redDim: '#1a0500',
+  redDim: '#2a0500',
   green: '#4a7c59',
   greenDim: '#0a1a0f',
   blue: '#3a6080',
   blueDim: '#0a1520',
   text: '#e8e0d0',
-  textDim: '#7a7060',
-  textMuted: '#3a3530',
+  textDim: '#9a8a70',
+  textMuted: '#a09070',
 }
-
 const inputStyle = {
   width: '100%', padding: '12px 14px', background: C.card2,
   border: `1px solid ${C.border}`, borderRadius: '10px',

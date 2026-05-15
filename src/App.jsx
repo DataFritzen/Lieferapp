@@ -51,20 +51,20 @@ function setSpracheLS(lang) {
 }
 
 const C = {
-  bg: '#0f0f0f',
-  card: '#161616',
-  card2: '#1e1e1e',
-  border: '#2a2520',
+  bg: '#130f0b',
+  card: '#1c1610',
+  card2: '#242018',
+  border: '#3a3020',
   gold: '#c8a96e',
   goldDim: '#1a1508',
   red: '#8b0000',
   redBright: '#cc2200',
-  redDim: '#1a0500',
+  redDim: '#2a0500',
   green: '#4a7c59',
   greenDim: '#0a1a0f',
   text: '#e8e0d0',
-  textDim: '#7a7060',
-  textMuted: '#3a3530',
+  textDim: '#9a8a70',
+  textMuted: '#a09070',
 }
 
 const inputStyle = {
@@ -461,7 +461,7 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
                 fontSize: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: 'Share Tech Mono, monospace'
               }}>−</button>
-              <span style={{ minWidth: '44px', textAlign: 'center', fontSize: '13px', color: auswahl[p.id] > 0 ? C.text : C.textMuted, fontWeight: '600' }}>
+              <span style={{ minWidth: '44px', textAlign: 'center', fontSize: '13px', color: auswahl[p.id] > 0 ? C.gold : C.textDim, fontWeight: '600' }}>
                 {p.mengen && p.mengen.length > 0
                   ? `${auswahl[p.id] || 0}×${p.mengen[0]}${p.einheit === 'Gramm' ? 'g' : ''}`
                   : `${auswahl[p.id] || 0} ${p.einheit === 'Gramm' ? 'g' : 'Stk'}`

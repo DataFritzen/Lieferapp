@@ -711,6 +711,10 @@ function Lieferer() {
           {gefilterteTokens.length === 0 && <div style={{ color: C.textMuted, textAlign: 'center', padding: '40px' }}>Keine Zugänge</div>}
           {gefilterteTokens.map(tok => {
             const inaktiv = tokenIstInaktiv(tok)
+            const telAnzeige = tok.telefon ? (() => {
+              try { const d = entschluesseln(tok.telefon); return d?.tel || tok.telefon }
+              catch { return tok.telefon }
+            })() : '—'
             return (
               <div key={tok.id} style={{
                 display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: '12px', alignItems: 'center',
@@ -729,7 +733,7 @@ function Lieferer() {
                   {!tok.aktiv && <div style={{ fontSize: '11px', color: C.redBright, marginTop: '2px' }}>GESPERRT</div>}
                 </div>
                 <div style={{ fontSize: '13px', color: C.textDim }}>
-                  {tok.telefon ? `📞 ${(() => { try { const d = entschluesseln(tok.telefon); return d?.tel || tok.telefon } catch { return tok.telefon } })()}` : '—'}
+                  {tok.telefon ? `📞 ${telAnzeige}` : '—'}
                 </div>
                 <button onClick={() => tokenSperren(tok.id)} disabled={!tok.aktiv} style={{
                   padding: '8px 14px', background: tok.aktiv ? C.redDim : C.card2,
@@ -739,10 +743,8 @@ function Lieferer() {
                   fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
                 }}>Sperren</button>
               </div>
-                background: C.card, border: `1px solid ${inaktiv ? '#7a6020' : C.border}`,
-          borderRadius: '12px', padding: '14px 16px', marginBottom: '8px',
-          opacity: tok.aktiv ? 1 : 0.5
-              }}>
+            )
+          })}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
               {inaktiv && <span>⚠️</span>}
@@ -767,8 +769,6 @@ function Lieferer() {
     </div>
   )
 }
-    </div >
-  )
-}
+   
 
 export default Lieferer

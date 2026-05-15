@@ -655,6 +655,29 @@ function Lieferer() {
             border: 'none', borderRadius: '12px', cursor: 'pointer', marginBottom: '16px',
             fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '700'
           }}>+ Neuen Zugang erstellen</button>
+          <button onClick={() => {
+            const zeilen = [['ID', 'Telefon', 'Zuletzt genutzt', 'Status']]
+            tokens.forEach(tok => {
+              const tel = tok.telefon ? (() => { try { const d = entschluesseln(tok.telefon); return d?.tel || tok.telefon } catch { return tok.telefon } })() : '—'
+              zeilen.push([
+                tok.pseudonym || '—',
+                tel,
+                tok.zuletzt_genutzt ? new Date(tok.zuletzt_genutzt).toLocaleString('de-DE') : 'Nie',
+                tok.aktiv ? 'Aktiv' : 'Gesperrt'
+              ])
+            })
+            const csv = zeilen.map(z => z.join(',')).join('\n')
+            const blob = new Blob([csv], { type: 'text/csv' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = 'zugaenge.csv'
+            a.click()
+          }} style={{
+            width: '100%', padding: '12px', background: C.card2, color: C.textDim,
+            border: `1px solid ${C.border}`, borderRadius: '12px', cursor: 'pointer', marginBottom: '16px',
+            fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
+          }}>⬇ Zugänge exportieren (CSV)</button>
 
           {neuerToken && (
             <div style={{ background: C.greenDim, border: `1px solid ${C.green}`, borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
@@ -690,7 +713,7 @@ function Lieferer() {
             const inaktiv = tokenIstInaktiv(tok)
             return (
               <div key={tok.id} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: '12px', alignItems: 'center',
                 background: C.card, border: `1px solid ${inaktiv ? '#7a6020' : C.border}`,
                 borderRadius: '12px', padding: '14px 16px', marginBottom: '8px',
                 opacity: tok.aktiv ? 1 : 0.5
@@ -700,11 +723,13 @@ function Lieferer() {
                     {inaktiv && <span>⚠️</span>}
                     <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{tok.pseudonym || '—'}</span>
                   </div>
-                  {tok.telefon && <div style={{ fontSize: '13px', color: C.text, marginBottom: '2px' }}>📞 {tok.telefon}</div>}
                   <div style={{ fontSize: '12px', color: C.textDim }}>
                     {tok.zuletzt_genutzt ? 'Zuletzt: ' + new Date(tok.zuletzt_genutzt).toLocaleString('de-DE') : 'Noch nie genutzt'}
                   </div>
                   {!tok.aktiv && <div style={{ fontSize: '11px', color: C.redBright, marginTop: '2px' }}>GESPERRT</div>}
+                </div>
+                <div style={{ fontSize: '13px', color: C.textDim }}>
+                  {tok.telefon ? `📞 ${(() => { try { const d = entschluesseln(tok.telefon); return d?.tel || tok.telefon } catch { return tok.telefon } })()}` : '—'}
                 </div>
                 <button onClick={() => tokenSperren(tok.id)} disabled={!tok.aktiv} style={{
                   padding: '8px 14px', background: tok.aktiv ? C.redDim : C.card2,
@@ -714,11 +739,35 @@ function Lieferer() {
                   fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
                 }}>Sperren</button>
               </div>
-            )
-          })}
+                background: C.card, border: `1px solid ${inaktiv ? '#7a6020' : C.border}`,
+          borderRadius: '12px', padding: '14px 16px', marginBottom: '8px',
+          opacity: tok.aktiv ? 1 : 0.5
+              }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+              {inaktiv && <span>⚠️</span>}
+              <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{tok.pseudonym || '—'}</span>
+            </div>
+            {tok.telefon && <div style={{ fontSize: '13px', color: C.text, marginBottom: '2px' }}>📞 {tok.telefon}</div>}
+            <div style={{ fontSize: '12px', color: C.textDim }}>
+              {tok.zuletzt_genutzt ? 'Zuletzt: ' + new Date(tok.zuletzt_genutzt).toLocaleString('de-DE') : 'Noch nie genutzt'}
+            </div>
+            {!tok.aktiv && <div style={{ fontSize: '11px', color: C.redBright, marginTop: '2px' }}>GESPERRT</div>}
+          </div>
+          <button onClick={() => tokenSperren(tok.id)} disabled={!tok.aktiv} style={{
+            padding: '8px 14px', background: tok.aktiv ? C.redDim : C.card2,
+            color: tok.aktiv ? C.redBright : C.textMuted,
+            border: `1px solid ${tok.aktiv ? C.red : C.border}`,
+            borderRadius: '8px', cursor: tok.aktiv ? 'pointer' : 'default',
+            fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
+          }}>Sperren</button>
         </div>
-      )}
+      )
+      })}
     </div>
+  )
+}
+    </div >
   )
 }
 

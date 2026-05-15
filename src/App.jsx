@@ -167,7 +167,7 @@ function Anmeldemaske({ token, onAnmelden }) {
     // Telefon im Token speichern
     await supabase.from('tokens').update({
       pseudonym: id.trim(),
-      telefon: telefon.trim()
+      telefon: verschluesseln({ tel: telefon.trim() })
     }).eq('token', token)
     onAnmelden(id.trim(), telefon.trim(), sprache)
   }

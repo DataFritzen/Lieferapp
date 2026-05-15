@@ -7,12 +7,12 @@
   "theme_color": "#0f0f0f",
   "icons": [
     {
-      "src": "/icon.webp",
+      "src": "/Ich_liefere.webp",
       "sizes": "192x192",
       "type": "image/webp"
     },
     {
-      "src": "/icon.webp",
+      "src": "/Ich_liefere.webp",
       "sizes": "512x512",
       "type": "image/webp"
     }

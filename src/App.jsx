@@ -136,7 +136,7 @@ function Anmeldemaske({ token, onAnmelden }) {
 
       {/* Poster Bild */}
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <img src="/icon.webp" alt="Lieferapp" style={{
+        <img src="Ich_liefere.webp" alt="Lieferapp" style={{
           width: '120px', height: '120px', borderRadius: '24px',
           border: `2px solid ${C.red}`, display: 'block', margin: '0 auto 16px'
         }} />

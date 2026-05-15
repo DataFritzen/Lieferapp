@@ -1,0 +1,20 @@
+{
+  "name": "Lieferapp",
+  "short_name": "Lieferapp",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#0f0f0f",
+  "icons": [
+    {
+      "src": "/icon.webp",
+      "sizes": "192x192",
+      "type": "image/webp"
+    },
+    {
+      "src": "/icon.webp",
+      "sizes": "512x512",
+      "type": "image/webp"
+    }
+  ]
+}

@@ -22,6 +22,18 @@ function getPseudonym(token) {
   return p
 }
 
+function getGespeichertesDaten(token) {
+  const key = 'profil_' + token
+  const gespeichert = localStorage.getItem(key)
+  return gespeichert ? JSON.parse(gespeichert) : null
+}
+
+function speichereProfil(token, id, telefon) {
+  const key = 'profil_' + token
+  localStorage.setItem(key, JSON.stringify({ id, telefon }))
+  localStorage.setItem('pseudonym_' + token, id)
+}
+
 // Revolucion Palette
 const C = {
   bg: '#0f0f0f',
@@ -96,10 +108,100 @@ function PosterStatus({ status, bestaetigterSlot, paketstation }) {
   )
 }
 
-function Besteller({ token }) {
-  const pseudonym = getPseudonym(token)
+function Anmeldemaske({ token, onAnmelden }) {
+  const vorhandenes = getGespeichertesDaten(token)
+  const [id, setId] = useState(vorhandenes?.id || getPseudonym(token))
+  const [telefon, setTelefon] = useState(vorhandenes?.telefon || '')
+  const [fehler, setFehler] = useState('')
+
+  function anmelden() {
+    if (!id.trim()) { setFehler('Bitte eine ID eingeben.'); return }
+    if (!telefon.trim()) { setFehler('Telefonnummer ist Pflicht.'); return }
+    speichereProfil(token, id.trim(), telefon.trim())
+    onAnmelden(id.trim(), telefon.trim())
+  }
+
+  async function appInstallieren() {
+    if (window.deferredPrompt) {
+      window.deferredPrompt.prompt()
+      await window.deferredPrompt.userChoice
+      window.deferredPrompt = null
+    } else {
+      alert('Öffne diese Seite in Safari (iPhone) oder Chrome (Android) und wähle "Zum Homescreen hinzufügen".')
+    }
+  }
+
+  return (
+    <div style={{ padding: '20px', maxWidth: '440px', margin: '0 auto', minHeight: '100vh', background: C.bg, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+
+      {/* Poster Bild */}
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <img src="/icon.webp" alt="Lieferapp" style={{
+          width: '120px', height: '120px', borderRadius: '24px',
+          border: `2px solid ${C.red}`, display: 'block', margin: '0 auto 16px'
+        }} />
+        <div style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.2em', marginBottom: '4px' }}>ORDEN DE ENTREGA</div>
+        <div style={{ fontSize: '12px', color: C.textDim }}>Zugang autorisiert — Profil einrichten</div>
+      </div>
+
+      {/* Formular */}
+      <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '16px', padding: '24px', marginBottom: '16px' }}>
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.1em', marginBottom: '8px' }}>DEINE ID</div>
+          <input
+            type="text"
+            value={id}
+            onChange={e => setId(e.target.value)}
+            placeholder="z.B. Kühn-Adler-46"
+            style={{ ...inputStyle, marginBottom: 0 }}
+          />
+          <div style={{ fontSize: '11px', color: C.textMuted, marginTop: '4px' }}>Automatisch generiert — du kannst sie ändern</div>
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.1em', marginBottom: '8px' }}>
+            TELEFONNUMMER <span style={{ color: C.red }}>*</span>
+          </div>
+          <input
+            type="tel"
+            value={telefon}
+            onChange={e => setTelefon(e.target.value)}
+            placeholder="+49 123 456789"
+            style={{ ...inputStyle, marginBottom: 0 }}
+          />
+        </div>
+
+        {fehler && (
+          <div style={{ fontSize: '13px', color: C.redBright, marginBottom: '12px' }}>{fehler}</div>
+        )}
+
+        <button onClick={anmelden} style={{
+          width: '100%', padding: '16px', background: C.red, color: C.text,
+          border: 'none', borderRadius: '12px', fontSize: '15px',
+          cursor: 'pointer', letterSpacing: '0.1em',
+          fontFamily: 'Share Tech Mono, monospace', fontWeight: '600',
+        }}>
+          Weiter →
+        </button>
+      </div>
+
+      {/* App Download */}
+      <button onClick={appInstallieren} style={{
+        width: '100%', padding: '14px', background: C.goldDim, color: C.gold,
+        border: `1px solid ${C.gold}`, borderRadius: '12px', fontSize: '13px',
+        cursor: 'pointer', letterSpacing: '0.08em',
+        fontFamily: 'Share Tech Mono, monospace',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+      }}>
+        📲 App auf Homescreen installieren
+      </button>
+    </div>
+  )
+}
+
+function Besteller({ token, pseudonym, telefon: telefonVorgabe }) {
   const [auswahl, setAuswahl] = useState({})
-  const [telefon, setTelefon] = useState('')
+  const [telefon, setTelefon] = useState(telefonVorgabe || '')
   const [laden, setLaden] = useState(false)
   const [zeitfenster, setZeitfenster] = useState([])
   const [bestellungen, setBestellungen] = useState([])
@@ -385,9 +487,18 @@ function Besteller({ token }) {
   )
 }
 
+// PWA Install Event abfangen
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault()
+    window.deferredPrompt = e
+  })
+}
+
 function App() {
   const [tokenData, setTokenData] = useState(null)
   const [tokenGeprueft, setTokenGeprueft] = useState(false)
+  const [profil, setProfil] = useState(null)
 
   useEffect(() => {
     async function init() {
@@ -407,7 +518,15 @@ function App() {
   if (!tokenGeprueft) return <div style={{ background: C.bg, minHeight: '100vh' }} />
   if (!tokenData) return <div style={{ background: C.bg, minHeight: '100vh' }} />
   if (tokenData.rolle === 'lieferer') return <Lieferer />
-  if (tokenData.rolle === 'besteller') return <Besteller token={getTokenAusURL()} />
+  if (tokenData.rolle === 'besteller') {
+    const token = getTokenAusURL()
+    const gespeichert = getGespeichertesDaten(token)
+    if (!gespeichert || !gespeichert.telefon) {
+      return <Anmeldemaske token={token} onAnmelden={(id, tel) => setProfil({ id, telefon: tel })} />
+    }
+    const aktivProfil = profil || gespeichert
+    return <Besteller token={token} pseudonym={aktivProfil.id} telefon={aktivProfil.telefon} />
+  }
   return <div style={{ padding: '2rem', color: C.gold, background: C.bg, minHeight: '100vh' }}>Admin — in Entwicklung</div>
 }
 

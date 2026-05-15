@@ -23,14 +23,14 @@ const C = {
 }
 
 const inputStyle = {
-  width: '100%', padding: '12px 14px', background: C.card,
+  width: '100%', padding: '12px 14px', background: C.card2,
   border: `1px solid ${C.border}`, borderRadius: '10px',
-  color: C.text, fontSize: '14px', fontFamily: 'Share Tech Mono, monospace',
+  color: C.text, fontSize: '15px', fontFamily: 'Share Tech Mono, monospace',
   marginBottom: '8px', boxSizing: 'border-box', outline: 'none',
 }
 
 const selectStyle = {
-  padding: '12px 14px', background: C.card, border: `1px solid ${C.border}`,
+  padding: '12px 14px', background: C.card2, border: `1px solid ${C.border}`,
   borderRadius: '10px', color: C.text, fontSize: '14px',
   fontFamily: 'Share Tech Mono, monospace', outline: 'none',
 }
@@ -75,7 +75,7 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
       padding: '16px', marginBottom: '12px',
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-        <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{b.pseudonym}</span>
+        <span style={{ fontSize: '15px', color: C.text, fontWeight: '600' }}>{b.pseudonym}</span>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           {istStorniert && (
             <span style={{
@@ -84,7 +84,7 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
             }}>STORNIERT</span>
           )}
           <span style={{
-            fontSize: '10px', padding: '3px 10px', borderRadius: '20px', letterSpacing: '0.1em',
+            fontSize: '11px', padding: '3px 10px', borderRadius: '20px', letterSpacing: '0.1em',
             background: statusBg, color: statusColor, border: `1px solid ${statusColor}`
           }}>{statusText}</span>
         </div>
@@ -128,7 +128,7 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
       {!istStorniert && (
         <div style={{ marginBottom: '12px' }}>
           <select value={b.paketstation_id || ''} onChange={e => onPaketstation(b.id, e.target.value)}
-            style={{ ...selectStyle, width: '100%', fontSize: '13px', padding: '10px 12px' }}>
+            style={{ ...selectStyle, width: '100%', padding: '10px 12px' }}>
             <option value="">📦 Paketbox zuweisen...</option>
             {paketstationen.map(p => (
               <option key={p.id} value={p.id}>{p.name} — {p.adresse}</option>
@@ -159,43 +159,43 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
         {!istStorniert && b.status === 'offen' && (
           <>
             <button onClick={() => onStatus(b.id, 'bestätigt')} style={{
-              flex: 1, padding: '12px', background: C.greenDim, color: C.green,
+              flex: 1, padding: '14px', background: C.greenDim, color: C.green,
               border: `1px solid ${C.green}`, borderRadius: '10px', cursor: 'pointer',
-              fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
+              fontSize: '15px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
             }}>✓ Bestätigen</button>
             <button onClick={() => onStornieren(b.id)} style={{
-              padding: '12px 14px', background: C.redDim, color: C.redBright,
+              padding: '14px 16px', background: C.redDim, color: C.redBright,
               border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
-              fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
+              fontSize: '14px', fontFamily: 'Share Tech Mono, monospace'
             }}>Stornieren</button>
           </>
         )}
         {!istStorniert && b.status === 'bestätigt' && (
           <>
             <button onClick={() => onStatus(b.id, 'ausgestellt')} style={{
-              flex: 1, padding: '12px', background: C.blueDim, color: C.blue,
+              flex: 1, padding: '14px', background: C.blueDim, color: C.blue,
               border: `1px solid ${C.blue}`, borderRadius: '10px', cursor: 'pointer',
-              fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
+              fontSize: '15px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600'
             }}>📦 Ausgestellt</button>
             <button onClick={() => onStornieren(b.id)} style={{
-              padding: '12px 14px', background: C.redDim, color: C.redBright,
+              padding: '14px 16px', background: C.redDim, color: C.redBright,
               border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
-              fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
+              fontSize: '14px', fontFamily: 'Share Tech Mono, monospace'
             }}>Stornieren</button>
           </>
         )}
         {!istStorniert && b.status === 'ausgestellt' && (
           <button onClick={() => onLoeschen(b.id)} style={{
-            flex: 1, padding: '12px', background: C.redDim, color: C.redBright,
+            flex: 1, padding: '14px', background: C.redDim, color: C.redBright,
             border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
-            fontSize: '14px', fontFamily: 'Share Tech Mono, monospace'
+            fontSize: '15px', fontFamily: 'Share Tech Mono, monospace'
           }}>🗑 Löschen</button>
         )}
         {istStorniert && (
           <button onClick={() => onLoeschen(b.id)} style={{
-            flex: 1, padding: '12px', background: C.redDim, color: C.redBright,
+            flex: 1, padding: '14px', background: C.redDim, color: C.redBright,
             border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
-            fontSize: '14px', fontFamily: 'Share Tech Mono, monospace'
+            fontSize: '15px', fontFamily: 'Share Tech Mono, monospace'
           }}>🗑 Endgültig löschen</button>
         )}
       </div>
@@ -367,8 +367,7 @@ function Lieferer() {
     tokens.forEach(tok => {
       const tel = entschluesseleTelefon(tok.telefon) || '—'
       zeilen.push([
-        tok.pseudonym || '—',
-        tel,
+        tok.pseudonym || '—', tel,
         tok.zuletzt_genutzt ? new Date(tok.zuletzt_genutzt).toLocaleString('de-DE') : 'Nie',
         tok.aktiv ? 'Aktiv' : 'Gesperrt'
       ])
@@ -377,9 +376,7 @@ function Lieferer() {
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = url
-    a.download = 'zugaenge.csv'
-    a.click()
+    a.href = url; a.download = 'zugaenge.csv'; a.click()
   }
 
   function qrUrl(token) { return `${window.location.origin}?t=${token}` }
@@ -438,7 +435,7 @@ function Lieferer() {
   ]
 
   const btnFilter = (aktiv) => ({
-    padding: '8px 14px', fontSize: '12px',
+    padding: '10px 16px', fontSize: '13px',
     background: aktiv ? C.gold : C.card,
     color: aktiv ? '#0f0f0f' : C.textDim,
     border: `1px solid ${aktiv ? C.gold : C.border}`,
@@ -454,20 +451,21 @@ function Lieferer() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill={C.gold}>
             <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
           </svg>
-          <span style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.15em' }}>SISTEMA DE ENTREGA</span>
+          <span style={{ fontSize: '12px', color: C.gold, letterSpacing: '0.15em' }}>SISTEMA DE ENTREGA</span>
         </div>
         <div style={{ fontSize: '12px', color: C.textDim }}>Operator-Zugang</div>
       </div>
 
+      {/* Navigation — größer */}
       <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
         {tabs.map(tab => (
           <button key={tab.key} onClick={() => setAnsicht(tab.key)} style={{
-            padding: '8px 14px', fontSize: '12px', whiteSpace: 'nowrap',
+            padding: '12px 16px', fontSize: '13px', whiteSpace: 'nowrap',
             background: ansicht === tab.key ? C.gold : C.card,
-            color: ansicht === tab.key ? '#0f0f0f' : C.textDim,
+            color: ansicht === tab.key ? '#0f0f0f' : C.text,
             border: `1px solid ${ansicht === tab.key ? C.gold : C.border}`,
-            borderRadius: '8px', cursor: 'pointer',
-            fontFamily: 'Share Tech Mono, monospace', fontWeight: ansicht === tab.key ? '700' : '400'
+            borderRadius: '10px', cursor: 'pointer',
+            fontFamily: 'Share Tech Mono, monospace', fontWeight: ansicht === tab.key ? '700' : '500'
           }}>{tab.label}</button>
         ))}
       </div>
@@ -501,7 +499,7 @@ function Lieferer() {
       {ansicht === 'produkte' && (
         <div>
           <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '12px', letterSpacing: '0.1em' }}>NEUE WARE ANLEGEN</div>
+            <div style={{ fontSize: '12px', color: C.textDim, marginBottom: '12px', letterSpacing: '0.1em' }}>NEUE WARE ANLEGEN</div>
             <input type="text" placeholder="Bezeichnung" value={produktName} onChange={e => setProduktName(e.target.value)} style={inputStyle} />
             <input type="text" placeholder="Beschreibung (optional)" value={produktBeschreibung} onChange={e => setProduktBeschreibung(e.target.value)} style={inputStyle} />
             <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
@@ -523,32 +521,35 @@ function Lieferer() {
           </div>
 
           {produkte.length === 0 && <div style={{ color: C.textMuted, textAlign: 'center', padding: '40px' }}>Keine Waren</div>}
+
+          {/* Spalten Header */}
           {produkte.length > 0 && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 80px 70px', gap: '8px', padding: '4px 16px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>WARE</span>
-              <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>EINHEIT</span>
-              <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>PREIS</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 130px 90px 80px', gap: '8px', padding: '4px 16px', marginBottom: '6px' }}>
+              <span style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em' }}>WARE</span>
+              <span style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em' }}>EINHEIT</span>
+              <span style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em' }}>PREIS</span>
               <span></span>
             </div>
           )}
+
           {produkte.map(p => (
             <div key={p.id} style={{
-              display: 'grid', gridTemplateColumns: '1fr 120px 80px 70px', gap: '8px', alignItems: 'center',
+              display: 'grid', gridTemplateColumns: '1fr 130px 90px 80px', gap: '8px', alignItems: 'center',
               background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px',
               padding: '14px 16px', marginBottom: '6px'
             }}>
               <div>
-                <span style={{ color: C.text, fontSize: '14px', fontWeight: '600' }}>{p.name}</span>
-                {p.beschreibung && <div style={{ fontSize: '11px', color: C.textDim, marginTop: '2px' }}>{p.beschreibung}</div>}
+                <span style={{ color: C.text, fontSize: '15px', fontWeight: '600' }}>{p.name}</span>
+                {p.beschreibung && <div style={{ fontSize: '12px', color: C.textDim, marginTop: '2px' }}>{p.beschreibung}</div>}
               </div>
-              <span style={{ fontSize: '12px', color: C.textDim }}>
+              <span style={{ fontSize: '13px', color: C.text }}>
                 {p.einheit}{p.mengen && p.mengen.length > 0 ? ` · ${p.mengen[0]}${p.einheit === 'Gramm' ? 'g' : ' Stk'}` : ''}
               </span>
-              <span style={{ fontSize: '13px', color: C.gold }}>{p.preis > 0 ? `${p.preis.toFixed(2)} €` : '—'}</span>
+              <span style={{ fontSize: '14px', color: C.gold }}>{p.preis > 0 ? `${p.preis.toFixed(2)} €` : '—'}</span>
               <button onClick={() => produktLoeschen(p.id)} style={{
-                padding: '6px 10px', background: C.redDim, color: C.redBright,
+                padding: '8px 10px', background: C.redDim, color: C.redBright,
                 border: `1px solid ${C.red}`, borderRadius: '8px', cursor: 'pointer',
-                fontSize: '11px', fontFamily: 'Share Tech Mono, monospace'
+                fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
               }}>Löschen</button>
             </div>
           ))}
@@ -559,7 +560,7 @@ function Lieferer() {
       {ansicht === 'zeitfenster' && (
         <div>
           <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '12px', letterSpacing: '0.1em' }}>NEUER SLOT</div>
+            <div style={{ fontSize: '12px', color: C.textDim, marginBottom: '12px', letterSpacing: '0.1em' }}>NEUER SLOT</div>
             <input type="date" value={datum} onChange={e => setDatum(e.target.value)} style={inputStyle} />
             <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
               <select value={vonUhrzeit} onChange={e => setVonUhrzeit(e.target.value)} style={{ ...selectStyle, flex: 1 }}>
@@ -586,7 +587,7 @@ function Lieferer() {
                 fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '700'
               }}>+ Slot anlegen</button>
               <button onClick={letztenTagKopieren} style={{
-                flex: 1, padding: '12px', background: C.card2, color: C.textDim,
+                flex: 1, padding: '12px', background: C.card2, color: C.text,
                 border: `1px solid ${C.border}`, borderRadius: '10px', cursor: 'pointer',
                 fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
               }}>📋 Letzten Tag kopieren</button>
@@ -598,7 +599,7 @@ function Lieferer() {
             .filter(([d]) => new Date(d) >= heute)
             .map(([d, slots]) => (
               <div key={d} style={{ marginBottom: '20px' }}>
-                <div style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.1em', marginBottom: '8px' }}>
+                <div style={{ fontSize: '12px', color: C.gold, letterSpacing: '0.1em', marginBottom: '8px' }}>
                   📅 {datumFormatieren(d)}
                 </div>
                 {slots.map(z => {
@@ -610,15 +611,15 @@ function Lieferer() {
                       padding: '12px 14px', marginBottom: '6px'
                     }}>
                       <div>
-                        <span style={{ color: C.text, fontSize: '14px', fontWeight: '600' }}>{z.uhrzeit}</span>
-                        <span style={{ marginLeft: '12px', fontSize: '12px', color: belegung >= z.max_bestellungen ? C.redBright : C.green }}>
+                        <span style={{ color: C.text, fontSize: '15px', fontWeight: '600' }}>{z.uhrzeit}</span>
+                        <span style={{ marginLeft: '12px', fontSize: '13px', color: belegung >= z.max_bestellungen ? C.redBright : C.green }}>
                           {belegung}/{z.max_bestellungen}
                         </span>
                       </div>
                       <button onClick={() => zeitfensterLoeschen(z.id)} style={{
-                        padding: '6px 12px', background: C.redDim, color: C.redBright,
+                        padding: '8px 14px', background: C.redDim, color: C.redBright,
                         border: `1px solid ${C.red}`, borderRadius: '8px', cursor: 'pointer',
-                        fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
+                        fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
                       }}>Löschen</button>
                     </div>
                   )
@@ -632,7 +633,7 @@ function Lieferer() {
       {ansicht === 'paketstationen' && (
         <div>
           <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '12px', letterSpacing: '0.1em' }}>NEUE PAKETBOX</div>
+            <div style={{ fontSize: '12px', color: C.textDim, marginBottom: '12px', letterSpacing: '0.1em' }}>NEUE PAKETBOX</div>
             <input type="text" placeholder="Name (z.B. Box A)" value={neuerName} onChange={e => setNeuerName(e.target.value)} style={inputStyle} />
             <input type="text" placeholder="Adresse" value={neueAdresse} onChange={e => setNeueAdresse(e.target.value)} style={inputStyle} />
             <button onClick={pakietstationHinzufuegen} style={{
@@ -643,18 +644,26 @@ function Lieferer() {
           </div>
 
           {paketstationen.length === 0 && <div style={{ color: C.textMuted, textAlign: 'center', padding: '40px' }}>Keine Boxen</div>}
+
+          {/* Spalten Header */}
+          {paketstationen.length > 0 && (
+            <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 80px', gap: '8px', padding: '4px 16px', marginBottom: '6px' }}>
+              <span style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em' }}>NAME</span>
+              <span style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em' }}>ADRESSE</span>
+              <span></span>
+            </div>
+          )}
+
           {paketstationen.map(p => (
             <div key={p.id} style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              display: 'grid', gridTemplateColumns: '140px 1fr 80px', gap: '8px', alignItems: 'center',
               background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px',
               padding: '14px 16px', marginBottom: '8px'
             }}>
-              <div>
-                <span style={{ color: C.text, fontSize: '14px', fontWeight: '600' }}>{p.name}</span>
-                <span style={{ marginLeft: '8px', fontSize: '13px', color: C.textDim }}>{p.adresse}</span>
-              </div>
+              <span style={{ color: C.text, fontSize: '15px', fontWeight: '600' }}>{p.name}</span>
+              <span style={{ fontSize: '14px', color: C.text }}>{p.adresse}</span>
               <button onClick={() => pakietstationLoeschen(p.id)} style={{
-                padding: '6px 12px', background: C.redDim, color: C.redBright,
+                padding: '8px 10px', background: C.redDim, color: C.redBright,
                 border: `1px solid ${C.red}`, borderRadius: '8px', cursor: 'pointer',
                 fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
               }}>Löschen</button>
@@ -673,14 +682,14 @@ function Lieferer() {
           }}>+ Neuen Zugang erstellen</button>
 
           <button onClick={exportiereZugaenge} style={{
-            width: '100%', padding: '12px', background: C.card2, color: C.textDim,
+            width: '100%', padding: '12px', background: C.card2, color: C.text,
             border: `1px solid ${C.border}`, borderRadius: '12px', cursor: 'pointer', marginBottom: '16px',
             fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
           }}>⬇ Zugänge exportieren (CSV)</button>
 
           {neuerToken && (
             <div style={{ background: C.greenDim, border: `1px solid ${C.green}`, borderRadius: '14px', padding: '16px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '12px', color: C.green, marginBottom: '8px' }}>✓ Neuer Zugang — Link persönlich weitergeben</div>
+              <div style={{ fontSize: '13px', color: C.green, marginBottom: '8px' }}>✓ Neuer Zugang — Link persönlich weitergeben</div>
               <div style={{ background: C.card, borderRadius: '8px', padding: '10px', fontSize: '12px', wordBreak: 'break-all', marginBottom: '10px', color: C.textDim }}>
                 {qrUrl(neuerToken.token)}
               </div>
@@ -690,7 +699,7 @@ function Lieferer() {
                   borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '700'
                 }}>Kopieren</button>
                 <button onClick={() => setNeuerToken(null)} style={{
-                  padding: '10px 16px', background: C.card2, color: C.textDim,
+                  padding: '10px 16px', background: C.card2, color: C.text,
                   border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer',
                   fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
                 }}>Schließen</button>
@@ -709,9 +718,9 @@ function Lieferer() {
 
           {/* Spalten Header */}
           {gefilterteTokens.length > 0 && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: '12px', padding: '4px 16px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>ID</span>
-              <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>TELEFON</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 150px 80px', gap: '12px', padding: '4px 16px', marginBottom: '6px' }}>
+              <span style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em' }}>ID</span>
+              <span style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em' }}>TELEFON</span>
               <span></span>
             </div>
           )}
@@ -722,7 +731,7 @@ function Lieferer() {
             const telAnzeige = entschluesseleTelefon(tok.telefon)
             return (
               <div key={tok.id} style={{
-                display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: '12px', alignItems: 'center',
+                display: 'grid', gridTemplateColumns: '1fr 150px 80px', gap: '12px', alignItems: 'center',
                 background: C.card, border: `1px solid ${inaktiv ? '#7a6020' : C.border}`,
                 borderRadius: '12px', padding: '14px 16px', marginBottom: '8px',
                 opacity: tok.aktiv ? 1 : 0.5
@@ -730,18 +739,18 @@ function Lieferer() {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
                     {inaktiv && <span>⚠️</span>}
-                    <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{tok.pseudonym || '—'}</span>
+                    <span style={{ fontSize: '15px', color: C.text, fontWeight: '600' }}>{tok.pseudonym || '—'}</span>
                   </div>
                   <div style={{ fontSize: '12px', color: C.textDim }}>
-                    {tok.zuletzt_genutzt ? 'Zuletzt: ' + new Date(tok.zuletzt_genutzt).toLocaleString('de-DE') : 'Noch nie genutzt'}
+                    {tok.zuletzt_genutzt ? new Date(tok.zuletzt_genutzt).toLocaleString('de-DE') : 'Nie genutzt'}
                   </div>
                   {!tok.aktiv && <div style={{ fontSize: '11px', color: C.redBright, marginTop: '2px' }}>GESPERRT</div>}
                 </div>
-                <div style={{ fontSize: '13px', color: C.textDim }}>
-                  {telAnzeige ? `📞 ${telAnzeige}` : '—'}
+                <div style={{ fontSize: '14px', color: C.text }}>
+                  {telAnzeige || '—'}
                 </div>
                 <button onClick={() => tokenSperren(tok.id)} disabled={!tok.aktiv} style={{
-                  padding: '8px 14px', background: tok.aktiv ? C.redDim : C.card2,
+                  padding: '8px 12px', background: tok.aktiv ? C.redDim : C.card2,
                   color: tok.aktiv ? C.redBright : C.textMuted,
                   border: `1px solid ${tok.aktiv ? C.red : C.border}`,
                   borderRadius: '8px', cursor: tok.aktiv ? 'pointer' : 'default',

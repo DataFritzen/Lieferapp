@@ -5,7 +5,6 @@ import Messenger from './Messenger'
 import { verschluesseln } from './crypto'
 import { texte } from './i18n'
 
-// PWA Install Event
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault()
@@ -47,11 +46,10 @@ function getSprache() {
   return localStorage.getItem('sprache') || 'de'
 }
 
-function setSprache(lang) {
+function setSpracheLS(lang) {
   localStorage.setItem('sprache', lang)
 }
 
-// Revolucion Palette
 const C = {
   bg: '#0f0f0f',
   card: '#161616',
@@ -85,31 +83,32 @@ function StarIcon({ size = 16, color = '#c8a96e' }) {
   )
 }
 
-function SprachWaehler({ sprache, onChange }) {
+function SprachDropdown({ sprache, onChange }) {
   const sprachen = [
-    { code: 'de', flag: '🇩🇪', label: 'DE' },
-    { code: 'en', flag: '🇬🇧', label: 'EN' },
-    { code: 'uk', flag: '🇺🇦', label: 'UA' },
+    { code: 'de', label: '🇩🇪 Deutsch' },
+    { code: 'en', label: '🇬🇧 English' },
+    { code: 'uk', label: '🇺🇦 Українська' },
   ]
   return (
-    <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+    <select
+      value={sprache}
+      onChange={e => onChange(e.target.value)}
+      style={{
+        padding: '8px 12px', fontSize: '13px',
+        background: C.card2, color: C.text,
+        border: `1px solid ${C.border}`, borderRadius: '8px',
+        cursor: 'pointer', fontFamily: 'Share Tech Mono, monospace',
+        outline: 'none',
+      }}
+    >
       {sprachen.map(s => (
-        <button key={s.code} onClick={() => onChange(s.code)} style={{
-          padding: '6px 12px', fontSize: '13px',
-          background: sprache === s.code ? C.goldDim : 'transparent',
-          color: sprache === s.code ? C.gold : C.textDim,
-          border: `1px solid ${sprache === s.code ? C.gold : C.border}`,
-          borderRadius: '8px', cursor: 'pointer',
-          fontFamily: 'Share Tech Mono, monospace',
-        }}>
-          {s.flag} {s.label}
-        </button>
+        <option key={s.code} value={s.code}>{s.label}</option>
       ))}
-    </div>
+    </select>
   )
 }
 
-function PosterStatus({ status, t }) {
+function PosterStatus({ t }) {
   return (
     <div style={{
       background: C.card, border: `1px solid ${C.border}`,
@@ -137,11 +136,11 @@ function PosterStatus({ status, t }) {
           borderRight: '8px solid transparent',
           borderBottom: '8px solid #8b0000'
         }} />
-        <div style={{ fontSize: '13px', color: '#e8e0d0', fontStyle: 'italic', marginBottom: '4px' }}>
+        <div style={{ fontSize: '14px', color: '#e8e0d0', fontStyle: 'italic', marginBottom: '6px' }}>
           "La revolución no espera."
         </div>
-        <div style={{ fontSize: '12px', color: '#c8a96e' }}>{t.comandanteSagt}</div>
-        <div style={{ fontSize: '11px', color: '#9a8a70', marginTop: '2px' }}>{t.bestaetigung}</div>
+        <div style={{ fontSize: '13px', color: '#c8a96e' }}>{t.comandanteSagt}</div>
+        <div style={{ fontSize: '12px', color: '#9a8a70', marginTop: '4px' }}>{t.bestaetigung}</div>
       </div>
     </div>
   )
@@ -156,7 +155,7 @@ function Anmeldemaske({ token, onAnmelden }) {
   const t = texte[sprache]
 
   function sprachWechsel(lang) {
-    setSprache(lang)
+    setSpracheLS(lang)
     setSpracheState(lang)
   }
 
@@ -164,7 +163,6 @@ function Anmeldemaske({ token, onAnmelden }) {
     if (!id.trim()) { setFehler('Bitte eine ID eingeben.'); return }
     if (!telefon.trim()) { setFehler('Telefonnummer ist Pflicht.'); return }
     speichereProfil(token, id.trim(), telefon.trim())
-    // Telefon im Token speichern
     await supabase.from('tokens').update({
       pseudonym: id.trim(),
       telefon: verschluesseln({ tel: telefon.trim() })
@@ -188,52 +186,53 @@ function Anmeldemaske({ token, onAnmelden }) {
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '440px', margin: '0 auto', minHeight: '100vh', background: C.bg, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+    <div style={{ padding: '24px', maxWidth: '440px', margin: '0 auto', minHeight: '100vh', background: C.bg, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
 
       {/* Sprachauswahl */}
-      <div style={{ marginBottom: '24px' }}>
-        <SprachWaehler sprache={sprache} onChange={sprachWechsel} />
+      <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'center' }}>
+        <SprachDropdown sprache={sprache} onChange={sprachWechsel} />
       </div>
 
-      {/* Poster Bild */}
+      {/* Logo */}
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
         <img src="/Ich_liefere.webp" alt="Lieferapp" style={{
           width: '120px', height: '120px', borderRadius: '24px',
           border: `2px solid ${C.red}`, display: 'block', margin: '0 auto 16px',
           objectFit: 'cover'
         }} />
-        <div style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.2em', marginBottom: '4px' }}>{t.titel}</div>
-        <div style={{ fontSize: '12px', color: C.textDim }}>{t.untertitel}</div>
+        <div style={{ fontSize: '13px', color: C.gold, letterSpacing: '0.2em', marginBottom: '6px' }}>{t.titel}</div>
+        <div style={{ fontSize: '13px', color: C.textDim }}>{t.untertitel}</div>
       </div>
 
       {/* Formular */}
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '16px', padding: '24px', marginBottom: '16px' }}>
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.1em', marginBottom: '8px' }}>{t.deineId}</div>
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ fontSize: '14px', color: C.text, letterSpacing: '0.08em', marginBottom: '10px', fontWeight: '600' }}>{t.deineId}</div>
           <input type="text" value={id} onChange={e => setId(e.target.value)}
-            placeholder="z.B. Kühn-Adler-46" style={{ ...inputStyle, marginBottom: '4px' }} />
-          <div style={{ fontSize: '11px', color: C.textMuted }}>{t.idHinweis}</div>
+            placeholder="z.B. Kühn-Adler-46"
+            style={{ ...inputStyle, fontSize: '16px', marginBottom: '6px' }} />
+          <div style={{ fontSize: '12px', color: '#7a7060' }}>{t.idHinweis}</div>
         </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.1em', marginBottom: '8px' }}>
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ fontSize: '14px', color: C.text, letterSpacing: '0.08em', marginBottom: '10px', fontWeight: '600' }}>
             {t.telefon} <span style={{ color: C.red }}>*</span>
           </div>
           <input type="tel" value={telefon} onChange={e => setTelefon(e.target.value)}
-            placeholder="+49 123 456789" style={{ ...inputStyle, marginBottom: 0 }} />
+            placeholder="+49 123 456789"
+            style={{ ...inputStyle, fontSize: '16px', marginBottom: 0 }} />
         </div>
 
         {fehler && <div style={{ fontSize: '13px', color: C.redBright, marginBottom: '12px' }}>{fehler}</div>}
 
         <button onClick={anmelden} style={{
-          width: '100%', padding: '16px', background: C.red, color: C.text,
-          border: 'none', borderRadius: '12px', fontSize: '15px',
+          width: '100%', padding: '18px', background: C.red, color: C.text,
+          border: 'none', borderRadius: '12px', fontSize: '16px',
           cursor: 'pointer', letterSpacing: '0.1em',
           fontFamily: 'Share Tech Mono, monospace', fontWeight: '600',
         }}>{t.weiter}</button>
       </div>
 
-      {/* App Install */}
       <button onClick={appInstallieren} style={{
         width: '100%', padding: '14px', background: C.goldDim, color: C.gold,
         border: `1px solid ${C.gold}`, borderRadius: '12px', fontSize: '13px',
@@ -365,13 +364,13 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
       <div style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <StarIcon color={C.red} size={14} />
-          <span style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.15em' }}>{t.bestellungEingegangen}</span>
+          <span style={{ fontSize: '12px', color: C.gold, letterSpacing: '0.12em' }}>{t.bestellungEingegangen}</span>
         </div>
-        <SprachWaehler sprache={sprache} onChange={s => setSpracheState(s)} />
+        <SprachDropdown sprache={sprache} onChange={s => setSpracheState(s)} />
       </div>
       <div style={{ fontSize: '12px', color: C.textDim, marginBottom: '20px' }}>ID: {pseudonym}</div>
 
-      {bestellStatus !== 'bestätigt' && <PosterStatus status={bestellStatus} t={t} />}
+      {bestellStatus !== 'bestätigt' && <PosterStatus t={t} />}
 
       {bestellStatus === 'bestätigt' && (
         <div style={{
@@ -380,7 +379,7 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <StarIcon color={C.red} size={14} />
-            <span style={{ fontSize: '12px', color: C.gold, letterSpacing: '0.1em' }}>{t.bestaetigt}</span>
+            <span style={{ fontSize: '13px', color: C.gold, letterSpacing: '0.1em' }}>{t.bestaetigt}</span>
           </div>
           {bestaetigterSlot && (
             <div style={{ marginBottom: '14px' }}>
@@ -402,14 +401,14 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
       )}
 
       <div style={{ marginBottom: '16px' }}>
-        <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '10px' }}>{t.kommunikation}</div>
+        <div style={{ fontSize: '12px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '10px' }}>{t.kommunikation}</div>
         <Messenger bestellungId={bestellungId} pseudonym={pseudonym} sprache={sprache} />
       </div>
 
       <button onClick={stornieren} style={{
         width: '100%', padding: '14px', background: C.redDim, color: C.redBright,
         border: `1px solid ${C.red}`, borderRadius: '10px', cursor: 'pointer',
-        fontSize: '13px', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.05em'
+        fontSize: '14px', fontFamily: 'Share Tech Mono, monospace',
       }}>{t.stornieren}</button>
     </div>
   )
@@ -422,55 +421,57 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <StarIcon color={C.red} size={14} />
-            <span style={{ fontSize: '11px', color: C.gold, letterSpacing: '0.15em' }}>{t.titel}</span>
+            <span style={{ fontSize: '12px', color: C.gold, letterSpacing: '0.12em' }}>{t.titel}</span>
           </div>
-          <SprachWaehler sprache={sprache} onChange={s => setSpracheState(s)} />
+          <SprachDropdown sprache={sprache} onChange={s => setSpracheState(s)} />
         </div>
         <div style={{ fontSize: '12px', color: C.textDim }}>ID: {pseudonym}</div>
       </div>
 
-      {/* Produkte */}
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.1em', marginBottom: '12px' }}>{t.warenAuswaehlen}</div>
-        {produkte.length === 0 && <div style={{ color: C.textMuted, fontSize: '14px', padding: '20px', textAlign: 'center' }}>{t.keinProdukte}</div>}
+      {/* Produkte — ohne Überschrift */}
+      <div style={{ marginBottom: '28px' }}>
 
+        {/* Spalten Header */}
         {produkte.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 130px', gap: '8px', padding: '4px 16px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>{t.ware}</span>
-            <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em', textAlign: 'right' }}>{t.preis}</span>
-            <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em', textAlign: 'center' }}>{t.menge}</span>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 150px', gap: '8px', padding: '0 4px', marginBottom: '8px' }}>
+            <span style={{ fontSize: '12px', color: '#9a9080', letterSpacing: '0.08em', fontWeight: '600' }}>{t.ware}</span>
+            <span style={{ fontSize: '12px', color: C.gold, letterSpacing: '0.08em', fontWeight: '600', textAlign: 'right' }}>{t.preis}</span>
+            <span style={{ fontSize: '12px', color: C.text, letterSpacing: '0.08em', fontWeight: '600', textAlign: 'center' }}>{t.menge}</span>
           </div>
         )}
 
+        {produkte.length === 0 && <div style={{ color: C.textMuted, fontSize: '14px', padding: '20px', textAlign: 'center' }}>{t.keinProdukte}</div>}
         {produkte.map(p => (
           <div key={p.id} style={{
             background: C.card, border: `1px solid ${C.border}`, borderRadius: '12px',
-            padding: '14px 16px', marginBottom: '6px',
-            display: 'grid', gridTemplateColumns: '1fr 80px 130px', gap: '8px', alignItems: 'center'
+            padding: '16px', marginBottom: '8px',
+            display: 'grid', gridTemplateColumns: '1fr 70px 150px', gap: '8px', alignItems: 'center'
           }}>
             <div>
-              <div style={{ fontSize: '15px', color: C.text, fontWeight: '600' }}>{p.name}</div>
-              {p.beschreibung && <div style={{ fontSize: '11px', color: C.textDim, marginTop: '2px' }}>{p.beschreibung}</div>}
+              <div style={{ fontSize: '16px', color: C.text, fontWeight: '600' }}>{p.name}</div>
+              {p.beschreibung && <div style={{ fontSize: '12px', color: C.textDim, marginTop: '2px' }}>{p.beschreibung}</div>}
             </div>
-            <div style={{ fontSize: '13px', color: C.gold, textAlign: 'right', whiteSpace: 'nowrap' }}>
-              {p.preis > 0 ? `${p.preis.toFixed(2)} €` : '—'}
+            <div style={{ fontSize: '14px', color: C.gold, textAlign: 'right', whiteSpace: 'nowrap' }}>
+              {p.preis > 0 ? `${p.preis.toFixed(2)}€` : '—'}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={() => mengeAendern(p.id, (auswahl[p.id] || 0) - 1)} style={{
-                width: '32px', height: '32px', background: C.card2, color: C.text,
-                border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer',
-                fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                width: '42px', height: '42px', background: C.card2, color: C.text,
+                border: `1px solid ${C.border}`, borderRadius: '10px', cursor: 'pointer',
+                fontSize: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: 'Share Tech Mono, monospace'
               }}>−</button>
-              <span style={{ minWidth: '48px', textAlign: 'center', fontSize: '12px', color: auswahl[p.id] > 0 ? C.text : C.textMuted, fontWeight: '600' }}>
+              <span style={{ minWidth: '44px', textAlign: 'center', fontSize: '13px', color: auswahl[p.id] > 0 ? C.text : C.textMuted, fontWeight: '600' }}>
                 {p.mengen && p.mengen.length > 0
-                  ? `${auswahl[p.id] || 0}× ${p.mengen[0]}${p.einheit === 'Gramm' ? 'g' : ' Stk'}`
+                  ? `${auswahl[p.id] || 0}×${p.mengen[0]}${p.einheit === 'Gramm' ? 'g' : ''}`
                   : `${auswahl[p.id] || 0} ${p.einheit === 'Gramm' ? 'g' : 'Stk'}`
                 }
               </span>
               <button onClick={() => mengeAendern(p.id, (auswahl[p.id] || 0) + 1)} style={{
-                width: '32px', height: '32px', background: C.card2, color: C.text,
-                border: `1px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer',
-                fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                width: '42px', height: '42px', background: C.card2, color: C.text,
+                border: `1px solid ${C.border}`, borderRadius: '10px', cursor: 'pointer',
+                fontSize: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: 'Share Tech Mono, monospace'
               }}>+</button>
             </div>
           </div>
@@ -479,7 +480,9 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
 
       {/* Zeitfenster */}
       <div style={{ marginBottom: '24px' }}>
-        <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.1em', marginBottom: '12px' }}>{t.zeitfensterWaehlen}</div>
+        <div style={{ fontSize: '15px', color: C.text, letterSpacing: '0.06em', marginBottom: '14px', fontWeight: '600' }}>
+          {t.zeitfensterWaehlen}
+        </div>
         {zeitfenster.length === 0 && <div style={{ color: C.textMuted, fontSize: '14px', padding: '20px', textAlign: 'center' }}>{t.keineZeitfenster}</div>}
         {zeitfenster.filter(z => {
           const jetzt = new Date()
@@ -497,11 +500,11 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
           const gewaehlt = gewaehlterSlot?.id === z.id
           return (
             <button key={z.id} onClick={() => setGewaehlterSlot(z)} style={{
-              display: 'block', width: '100%', padding: '14px 16px', marginBottom: '6px',
+              display: 'block', width: '100%', padding: '16px 18px', marginBottom: '8px',
               border: `1px solid ${gewaehlt ? C.gold : C.border}`,
-              borderRadius: '10px', background: gewaehlt ? C.goldDim : C.card,
+              borderRadius: '12px', background: gewaehlt ? C.goldDim : C.card,
               color: gewaehlt ? C.gold : C.text,
-              cursor: 'pointer', textAlign: 'left', fontSize: '14px',
+              cursor: 'pointer', textAlign: 'left', fontSize: '16px',
               fontFamily: 'Share Tech Mono, monospace', fontWeight: gewaehlt ? '600' : '400',
             }}>
               {z.datum ? new Date(z.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + '  ·  ' : ''}
@@ -514,15 +517,15 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
 
       {/* Telefon */}
       <div style={{ marginBottom: '24px' }}>
-        <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.1em', marginBottom: '10px' }}>{t.telefonOptional}</div>
+        <div style={{ fontSize: '13px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '10px' }}>{t.telefonOptional}</div>
         <input type="tel" placeholder="+49 123 456789" value={telefon}
           onChange={e => setTelefon(e.target.value)} style={inputStyle} />
       </div>
 
       <button onClick={bestellenKlick} disabled={laden} style={{
-        width: '100%', padding: '16px', background: laden ? C.redDim : C.red,
+        width: '100%', padding: '18px', background: laden ? C.redDim : C.red,
         color: C.text, border: 'none', borderRadius: '12px',
-        fontSize: '15px', cursor: laden ? 'not-allowed' : 'pointer',
+        fontSize: '16px', cursor: laden ? 'not-allowed' : 'pointer',
         letterSpacing: '0.1em', fontFamily: 'Share Tech Mono, monospace', fontWeight: '600',
         opacity: laden ? 0.6 : 1,
       }}>

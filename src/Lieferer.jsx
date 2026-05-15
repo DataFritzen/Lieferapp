@@ -679,38 +679,38 @@ function Lieferer() {
           <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
             {[
               { key: 'alle', label: `Alle (${tokens.length})` },
-              { key: 'inaktiv', label: `⚠ Lang inaktiv (${tokens.filter(t => tokenIstInaktiv(t)).length})` },
+              { key: 'inaktiv', label: `⚠ Lang inaktiv (${tokens.filter(tok => tokenIstInaktiv(tok)).length})` },
             ].map(f => (
               <button key={f.key} onClick={() => setTokenFilter(f.key)} style={btnFilter(tokenFilter === f.key)}>{f.label}</button>
             ))}
           </div>
 
           {gefilterteTokens.length === 0 && <div style={{ color: C.textMuted, textAlign: 'center', padding: '40px' }}>Keine Zugänge</div>}
-          {gefilterteTokens.map(t => {
-            const inaktiv = tokenIstInaktiv(t)
+          {gefilterteTokens.map(tok => {
+            const inaktiv = tokenIstInaktiv(tok)
             return (
-              <div key={t.id} style={{
+              <div key={tok.id} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 background: C.card, border: `1px solid ${inaktiv ? '#7a6020' : C.border}`,
                 borderRadius: '12px', padding: '14px 16px', marginBottom: '8px',
-                opacity: t.aktiv ? 1 : 0.5
+                opacity: tok.aktiv ? 1 : 0.5
               }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
                     {inaktiv && <span>⚠️</span>}
-                    <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{t.pseudonym || '—'}</span>
+                    <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{tok.pseudonym || '—'}</span>
                   </div>
-                  {t2.telefon && <div style={{ fontSize: '13px', color: C.text, marginBottom: '2px' }}>📞 {t2.telefon}</div>}
+                  {tok.telefon && <div style={{ fontSize: '13px', color: C.text, marginBottom: '2px' }}>📞 {tok.telefon}</div>}
                   <div style={{ fontSize: '12px', color: C.textDim }}>
-                    {t2.zuletzt_genutzt ? 'Zuletzt: ' + new Date(t2.zuletzt_genutzt).toLocaleString('de-DE') : 'Noch nie genutzt'}
+                    {tok.zuletzt_genutzt ? 'Zuletzt: ' + new Date(tok.zuletzt_genutzt).toLocaleString('de-DE') : 'Noch nie genutzt'}
                   </div>
-                  {!t.aktiv && <div style={{ fontSize: '11px', color: C.redBright, marginTop: '2px' }}>GESPERRT</div>}
+                  {!tok.aktiv && <div style={{ fontSize: '11px', color: C.redBright, marginTop: '2px' }}>GESPERRT</div>}
                 </div>
-                <button onClick={() => tokenSperren(t.id)} disabled={!t.aktiv} style={{
-                  padding: '8px 14px', background: t.aktiv ? C.redDim : C.card2,
-                  color: t.aktiv ? C.redBright : C.textMuted,
-                  border: `1px solid ${t.aktiv ? C.red : C.border}`,
-                  borderRadius: '8px', cursor: t.aktiv ? 'pointer' : 'default',
+                <button onClick={() => tokenSperren(tok.id)} disabled={!tok.aktiv} style={{
+                  padding: '8px 14px', background: tok.aktiv ? C.redDim : C.card2,
+                  color: tok.aktiv ? C.redBright : C.textMuted,
+                  border: `1px solid ${tok.aktiv ? C.red : C.border}`,
+                  borderRadius: '8px', cursor: tok.aktiv ? 'pointer' : 'default',
                   fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
                 }}>Sperren</button>
               </div>

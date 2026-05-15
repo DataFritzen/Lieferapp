@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabase'
 
-function Messenger({ bestellungId, pseudonym, mitMikrofon = false }) {
+import { texte } from './i18n'
+
+function Messenger({ bestellungId, pseudonym, mitMikrofon = false, sprache = 'de' }) {
+  const t = texte[sprache]
   const [nachrichten, setNachrichten] = useState([])
   const [text, setText] = useState('')
   const [hoert, setHoert] = useState(false)
@@ -67,7 +70,7 @@ function Messenger({ bestellungId, pseudonym, mitMikrofon = false }) {
       <div style={{ height: '160px', overflowY: 'auto', padding: '12px', background: '#0c0c0c' }}>
         {nachrichten.length === 0 && (
           <div style={{ color: '#3a3530', fontSize: '13px', textAlign: 'center', marginTop: '50px' }}>
-            Noch keine Nachrichten
+            {t.keineNachrichten}
           </div>
         )}
         {nachrichten.map(n => {
@@ -101,7 +104,7 @@ function Messenger({ bestellungId, pseudonym, mitMikrofon = false }) {
         <input type="text" value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && senden()}
-          placeholder={hoert ? 'Höre zu...' : 'Nachricht...'}
+          placeholder={hoert ? '...' : t.nachrichtPlaceholder}
           style={{
             flex: 1, padding: '12px 14px', border: 'none', outline: 'none',
             fontSize: '14px', background: 'transparent', color: '#e8e0d0',

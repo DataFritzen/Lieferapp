@@ -700,8 +700,9 @@ function Lieferer() {
                     {inaktiv && <span>⚠️</span>}
                     <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{t.pseudonym || '—'}</span>
                   </div>
+                  {t2.telefon && <div style={{ fontSize: '13px', color: C.text, marginBottom: '2px' }}>📞 {t2.telefon}</div>}
                   <div style={{ fontSize: '12px', color: C.textDim }}>
-                    {t.zuletzt_genutzt ? 'Zuletzt: ' + new Date(t.zuletzt_genutzt).toLocaleString('de-DE') : 'Noch nie genutzt'}
+                    {t2.zuletzt_genutzt ? 'Zuletzt: ' + new Date(t2.zuletzt_genutzt).toLocaleString('de-DE') : 'Noch nie genutzt'}
                   </div>
                   {!t.aktiv && <div style={{ fontSize: '11px', color: C.redBright, marginTop: '2px' }}>GESPERRT</div>}
                 </div>

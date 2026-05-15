@@ -109,7 +109,7 @@ function SprachWaehler({ sprache, onChange }) {
   )
 }
 
-function PosterStatus({ status }) {
+function PosterStatus({ status, t }) {
   return (
     <div style={{
       background: C.card, border: `1px solid ${C.border}`,
@@ -140,8 +140,8 @@ function PosterStatus({ status }) {
         <div style={{ fontSize: '13px', color: '#e8e0d0', fontStyle: 'italic', marginBottom: '4px' }}>
           "La revolución no espera."
         </div>
-        <div style={{ fontSize: '12px', color: '#c8a96e' }}>Der Comandante kümmert sich.</div>
-        <div style={{ fontSize: '11px', color: '#9a8a70', marginTop: '2px' }}>Bestätigung folgt in Kürze.</div>
+        <div style={{ fontSize: '12px', color: '#c8a96e' }}>{t.comandanteSagt}</div>
+        <div style={{ fontSize: '11px', color: '#9a8a70', marginTop: '2px' }}>{t.bestaetigung}</div>
       </div>
     </div>
   )
@@ -160,10 +160,15 @@ function Anmeldemaske({ token, onAnmelden }) {
     setSpracheState(lang)
   }
 
-  function anmelden() {
+  async function anmelden() {
     if (!id.trim()) { setFehler('Bitte eine ID eingeben.'); return }
     if (!telefon.trim()) { setFehler('Telefonnummer ist Pflicht.'); return }
     speichereProfil(token, id.trim(), telefon.trim())
+    // Telefon im Token speichern
+    await supabase.from('tokens').update({
+      pseudonym: id.trim(),
+      telefon: telefon.trim()
+    }).eq('token', token)
     onAnmelden(id.trim(), telefon.trim(), sprache)
   }
 
@@ -366,7 +371,7 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
       </div>
       <div style={{ fontSize: '12px', color: C.textDim, marginBottom: '20px' }}>ID: {pseudonym}</div>
 
-      {bestellStatus !== 'bestätigt' && <PosterStatus status={bestellStatus} />}
+      {bestellStatus !== 'bestätigt' && <PosterStatus status={bestellStatus} t={t} />}
 
       {bestellStatus === 'bestätigt' && (
         <div style={{
@@ -398,7 +403,7 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
 
       <div style={{ marginBottom: '16px' }}>
         <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em', marginBottom: '10px' }}>{t.kommunikation}</div>
-        <Messenger bestellungId={bestellungId} pseudonym={pseudonym} />
+        <Messenger bestellungId={bestellungId} pseudonym={pseudonym} sprache={sprache} />
       </div>
 
       <button onClick={stornieren} style={{

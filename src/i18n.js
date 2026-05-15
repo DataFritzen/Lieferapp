@@ -29,6 +29,10 @@ export const texte = {
     preis: 'PREIS',
     menge: 'MENGE',
     sprache: 'Sprache',
+    comandanteSagt: 'Der Comandante kümmert sich.',
+    bestaetigung: 'Bestätigung folgt in Kürze.',
+    keineNachrichten: 'Noch keine Nachrichten',
+    nachrichtPlaceholder: 'Nachricht...',
   },
   en: {
     titel: 'ORDER SYSTEM',
@@ -60,6 +64,10 @@ export const texte = {
     preis: 'PRICE',
     menge: 'QTY',
     sprache: 'Language',
+    comandanteSagt: 'The Comandante is on it.',
+    bestaetigung: 'Confirmation coming shortly.',
+    keineNachrichten: 'No messages yet',
+    nachrichtPlaceholder: 'Message...',
   },
   uk: {
     titel: 'СИСТЕМА ЗАМОВЛЕНЬ',
@@ -91,5 +99,9 @@ export const texte = {
     preis: 'ЦІНА',
     menge: 'К-СТЬ',
     sprache: 'Мова',
+    comandanteSagt: 'Команданте вже займається цим.',
+    bestaetigung: 'Підтвердження надійде незабаром.',
+    keineNachrichten: 'Повідомлень ще немає',
+    nachrichtPlaceholder: 'Повідомлення...',
   }
 }

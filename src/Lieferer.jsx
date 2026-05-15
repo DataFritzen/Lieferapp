@@ -35,6 +35,16 @@ const selectStyle = {
   fontFamily: 'Share Tech Mono, monospace', outline: 'none',
 }
 
+function entschluesseleTelefon(verschluesselt) {
+  if (!verschluesselt) return null
+  try {
+    const d = entschluesseln(verschluesselt)
+    return d?.tel || verschluesselt
+  } catch {
+    return verschluesselt
+  }
+}
+
 function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, onLoeschen, onPaketstation, onStornieren }) {
   const [messengerOffen, setMessengerOffen] = useState(false)
   const [hatNachrichten, setHatNachrichten] = useState(false)
@@ -52,8 +62,7 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
     })
   }, [b.id])
 
-  // Original-Status Farbe (ohne Storniert)
-  const originalStatus = b.status === 'storniert' ? (b.original_status || 'offen') : b.status
+  const originalStatus = istStorniert ? (b.original_status || 'offen') : b.status
   const statusColor = originalStatus === 'bestätigt' ? C.green : originalStatus === 'ausgestellt' ? C.blue : C.gold
   const statusBg = originalStatus === 'bestätigt' ? C.greenDim : originalStatus === 'ausgestellt' ? C.blueDim : C.goldDim
   const statusText = originalStatus === 'offen' ? 'OFFEN' : originalStatus === 'bestätigt' ? 'BESTÄTIGT' : 'AUSGESTELLT'
@@ -65,11 +74,8 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
       borderLeft: `4px solid ${istStorniert ? C.redBright : statusColor}`,
       padding: '16px', marginBottom: '12px',
     }}>
-      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{b.pseudonym}</span>
-        </div>
+        <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{b.pseudonym}</span>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           {istStorniert && (
             <span style={{
@@ -84,7 +90,6 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
         </div>
       </div>
 
-      {/* Waren */}
       <div style={{ marginBottom: '12px' }}>
         <div style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.1em', marginBottom: '6px' }}>WAREN</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
@@ -103,14 +108,12 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
         </div>
       </div>
 
-      {/* Slot */}
       {slot && (
         <div style={{ fontSize: '13px', color: C.textDim, marginBottom: '8px' }}>
           🕐 {slot.datum ? new Date(slot.datum).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }) + ' · ' : ''}{slot.uhrzeit}
         </div>
       )}
 
-      {/* Telefon */}
       {tel && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
           <span style={{ fontSize: '13px', color: C.textDim }}>📞 {tel}</span>
@@ -122,7 +125,6 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
         </div>
       )}
 
-      {/* Paketbox — nur wenn nicht storniert */}
       {!istStorniert && (
         <div style={{ marginBottom: '12px' }}>
           <select value={b.paketstation_id || ''} onChange={e => onPaketstation(b.id, e.target.value)}
@@ -136,7 +138,6 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
         </div>
       )}
 
-      {/* Messenger Toggle */}
       <button onClick={() => setMessengerOffen(!messengerOffen)} style={{
         width: '100%', padding: '10px', background: C.card2,
         color: hatNachrichten && !messengerOffen ? C.gold : C.textDim,
@@ -145,7 +146,7 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
         fontFamily: 'Share Tech Mono, monospace', marginBottom: '10px',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
       }}>
-        {hatNachrichten && !messengerOffen ? '💬 Neue Nachricht — öffnen' : messengerOffen ? '▲ Nachrichten schließen' : '▼ Nachrichten'}
+        {hatNachrichten && !messengerOffen ? '💬 Neue Nachricht' : messengerOffen ? '▲ Schließen' : '▼ Nachrichten'}
       </button>
 
       {messengerOffen && (
@@ -154,7 +155,6 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
         </div>
       )}
 
-      {/* Aktionen */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         {!istStorniert && b.status === 'offen' && (
           <>
@@ -227,11 +227,11 @@ function Lieferer() {
   const [produktMengen, setProduktMengen] = useState('')
 
   const uhrzeiten = [
-    '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
-    '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
-    '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
-    '19:00', '19:30', '20:00', '20:30', '21:00'
+    '07:00','07:30','08:00','08:30','09:00','09:30',
+    '10:00','10:30','11:00','11:30','12:00','12:30',
+    '13:00','13:30','14:00','14:30','15:00','15:30',
+    '16:00','16:30','17:00','17:30','18:00','18:30',
+    '19:00','19:30','20:00','20:30','21:00'
   ]
 
   async function ladeProdukte() {
@@ -362,6 +362,26 @@ function Lieferer() {
     ladeTokens()
   }
 
+  function exportiereZugaenge() {
+    const zeilen = [['ID', 'Telefon', 'Zuletzt genutzt', 'Status']]
+    tokens.forEach(tok => {
+      const tel = entschluesseleTelefon(tok.telefon) || '—'
+      zeilen.push([
+        tok.pseudonym || '—',
+        tel,
+        tok.zuletzt_genutzt ? new Date(tok.zuletzt_genutzt).toLocaleString('de-DE') : 'Nie',
+        tok.aktiv ? 'Aktiv' : 'Gesperrt'
+      ])
+    })
+    const csv = zeilen.map(z => z.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'zugaenge.csv'
+    a.click()
+  }
+
   function qrUrl(token) { return `${window.location.origin}?t=${token}` }
   function belegungZaehlen(zId) { return bestellungen.filter(b => b.zeitfenster_id === zId).length }
 
@@ -379,12 +399,12 @@ function Lieferer() {
     return new Date(d).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })
   }
 
-  function tokenIstInaktiv(t) {
-    if (t.aktiv) return false
-    if (!t.zuletzt_genutzt) return true
+  function tokenIstInaktiv(tok) {
+    if (tok.aktiv) return false
+    if (!tok.zuletzt_genutzt) return true
     const zweiMonate = new Date()
     zweiMonate.setMonth(zweiMonate.getMonth() - 2)
-    return new Date(t.zuletzt_genutzt) < zweiMonate
+    return new Date(tok.zuletzt_genutzt) < zweiMonate
   }
 
   useEffect(() => {
@@ -407,7 +427,7 @@ function Lieferer() {
     return anzeigeStatus === bestellFilter
   })
 
-  const gefilterteTokens = tokens.filter(t => tokenFilter === 'inaktiv' ? tokenIstInaktiv(t) : true)
+  const gefilterteTokens = tokens.filter(tok => tokenFilter === 'inaktiv' ? tokenIstInaktiv(tok) : true)
 
   const tabs = [
     { key: 'bestellungen', label: `Aufträge (${bestellungen.filter(b => !['ausgestellt'].includes(b.status)).length})` },
@@ -429,7 +449,6 @@ function Lieferer() {
   return (
     <div style={{ padding: '16px', maxWidth: '680px', margin: '0 auto', minHeight: '100vh', background: C.bg }}>
 
-      {/* Header */}
       <div style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: `1px solid ${C.border}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill={C.gold}>
@@ -440,7 +459,6 @@ function Lieferer() {
         <div style={{ fontSize: '12px', color: C.textDim }}>Operator-Zugang</div>
       </div>
 
-      {/* Navigation */}
       <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
         {tabs.map(tab => (
           <button key={tab.key} onClick={() => setAnsicht(tab.key)} style={{
@@ -505,7 +523,6 @@ function Lieferer() {
           </div>
 
           {produkte.length === 0 && <div style={{ color: C.textMuted, textAlign: 'center', padding: '40px' }}>Keine Waren</div>}
-
           {produkte.length > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 80px 70px', gap: '8px', padding: '4px 16px', marginBottom: '4px' }}>
               <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>WARE</span>
@@ -514,7 +531,6 @@ function Lieferer() {
               <span></span>
             </div>
           )}
-
           {produkte.map(p => (
             <div key={p.id} style={{
               display: 'grid', gridTemplateColumns: '1fr 120px 80px 70px', gap: '8px', alignItems: 'center',
@@ -560,7 +576,7 @@ function Lieferer() {
               <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '6px', letterSpacing: '0.08em' }}>MAX. BESTELLUNGEN</div>
               <select value={maxBestellungen} onChange={e => setMaxBestellungen(parseInt(e.target.value))}
                 style={{ ...selectStyle, width: '100%' }}>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => <option key={n} value={n}>{n}</option>)}
+                {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -652,28 +668,11 @@ function Lieferer() {
         <div>
           <button onClick={tokenErstellen} style={{
             width: '100%', padding: '14px', background: C.gold, color: '#0f0f0f',
-            border: 'none', borderRadius: '12px', cursor: 'pointer', marginBottom: '16px',
+            border: 'none', borderRadius: '12px', cursor: 'pointer', marginBottom: '8px',
             fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', fontWeight: '700'
           }}>+ Neuen Zugang erstellen</button>
-          <button onClick={() => {
-            const zeilen = [['ID', 'Telefon', 'Zuletzt genutzt', 'Status']]
-            tokens.forEach(tok => {
-              const tel = tok.telefon ? (() => { try { const d = entschluesseln(tok.telefon); return d?.tel || tok.telefon } catch { return tok.telefon } })() : '—'
-              zeilen.push([
-                tok.pseudonym || '—',
-                tel,
-                tok.zuletzt_genutzt ? new Date(tok.zuletzt_genutzt).toLocaleString('de-DE') : 'Nie',
-                tok.aktiv ? 'Aktiv' : 'Gesperrt'
-              ])
-            })
-            const csv = zeilen.map(z => z.join(',')).join('\n')
-            const blob = new Blob([csv], { type: 'text/csv' })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = 'zugaenge.csv'
-            a.click()
-          }} style={{
+
+          <button onClick={exportiereZugaenge} style={{
             width: '100%', padding: '12px', background: C.card2, color: C.textDim,
             border: `1px solid ${C.border}`, borderRadius: '12px', cursor: 'pointer', marginBottom: '16px',
             fontSize: '13px', fontFamily: 'Share Tech Mono, monospace'
@@ -708,13 +707,19 @@ function Lieferer() {
             ))}
           </div>
 
+          {/* Spalten Header */}
+          {gefilterteTokens.length > 0 && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: '12px', padding: '4px 16px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>ID</span>
+              <span style={{ fontSize: '10px', color: C.textMuted, letterSpacing: '0.08em' }}>TELEFON</span>
+              <span></span>
+            </div>
+          )}
+
           {gefilterteTokens.length === 0 && <div style={{ color: C.textMuted, textAlign: 'center', padding: '40px' }}>Keine Zugänge</div>}
           {gefilterteTokens.map(tok => {
             const inaktiv = tokenIstInaktiv(tok)
-            const telAnzeige = tok.telefon ? (() => {
-              try { const d = entschluesseln(tok.telefon); return d?.tel || tok.telefon }
-              catch { return tok.telefon }
-            })() : '—'
+            const telAnzeige = entschluesseleTelefon(tok.telefon)
             return (
               <div key={tok.id} style={{
                 display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: '12px', alignItems: 'center',
@@ -733,7 +738,7 @@ function Lieferer() {
                   {!tok.aktiv && <div style={{ fontSize: '11px', color: C.redBright, marginTop: '2px' }}>GESPERRT</div>}
                 </div>
                 <div style={{ fontSize: '13px', color: C.textDim }}>
-                  {tok.telefon ? `📞 ${telAnzeige}` : '—'}
+                  {telAnzeige ? `📞 ${telAnzeige}` : '—'}
                 </div>
                 <button onClick={() => tokenSperren(tok.id)} disabled={!tok.aktiv} style={{
                   padding: '8px 14px', background: tok.aktiv ? C.redDim : C.card2,
@@ -745,30 +750,10 @@ function Lieferer() {
               </div>
             )
           })}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-              {inaktiv && <span>⚠️</span>}
-              <span style={{ fontSize: '14px', color: C.text, fontWeight: '600' }}>{tok.pseudonym || '—'}</span>
-            </div>
-            {tok.telefon && <div style={{ fontSize: '13px', color: C.text, marginBottom: '2px' }}>📞 {tok.telefon}</div>}
-            <div style={{ fontSize: '12px', color: C.textDim }}>
-              {tok.zuletzt_genutzt ? 'Zuletzt: ' + new Date(tok.zuletzt_genutzt).toLocaleString('de-DE') : 'Noch nie genutzt'}
-            </div>
-            {!tok.aktiv && <div style={{ fontSize: '11px', color: C.redBright, marginTop: '2px' }}>GESPERRT</div>}
-          </div>
-          <button onClick={() => tokenSperren(tok.id)} disabled={!tok.aktiv} style={{
-            padding: '8px 14px', background: tok.aktiv ? C.redDim : C.card2,
-            color: tok.aktiv ? C.redBright : C.textMuted,
-            border: `1px solid ${tok.aktiv ? C.red : C.border}`,
-            borderRadius: '8px', cursor: tok.aktiv ? 'pointer' : 'default',
-            fontSize: '12px', fontFamily: 'Share Tech Mono, monospace'
-          }}>Sperren</button>
         </div>
-      )
-      })}
+      )}
     </div>
   )
 }
-   
 
 export default Lieferer

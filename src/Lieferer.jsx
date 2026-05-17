@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabase'
 import Messenger from './Messenger'
 import { entschluesseln } from './crypto'
+import { registrierePush } from './pushService'
 
 const C = {
   bg: '#130f0b',
@@ -61,6 +62,7 @@ function BestellungCard({ b, zeitfenster, paketstationen, produkte, onStatus, on
     })
   }, [b.id])
 
+  
   const originalStatus = istStorniert ? (b.original_status || 'offen') : b.status
   const statusColor = originalStatus === 'bestätigt' ? C.green : originalStatus === 'ausgestellt' ? C.blue : C.gold
   const statusBg = originalStatus === 'bestätigt' ? C.greenDim : originalStatus === 'ausgestellt' ? C.blueDim : C.goldDim
@@ -226,11 +228,11 @@ function Lieferer() {
   const [produktMengen, setProduktMengen] = useState('')
 
   const uhrzeiten = [
-    '07:00','07:30','08:00','08:30','09:00','09:30',
-    '10:00','10:30','11:00','11:30','12:00','12:30',
-    '13:00','13:30','14:00','14:30','15:00','15:30',
-    '16:00','16:30','17:00','17:30','18:00','18:30',
-    '19:00','19:30','20:00','20:30','21:00'
+    '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
+    '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
+    '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
+    '19:00', '19:30', '20:00', '20:30', '21:00'
   ]
 
   async function ladeProdukte() {
@@ -406,9 +408,46 @@ function Lieferer() {
   useEffect(() => {
     ladeAlles()
     const kanal = supabase.channel('bestellungen-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bestellungen' }, () => ladeAlles())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bestellungen' }, async (payload) => {
+        ladeAlles()
+        // Push an alle Lieferer schicken
+        const { data: subs } = await supabase.from('push_subscriptions').select('subscription')
+        if (subs) {
+          for (const s of subs) {
+            await supabase.functions.invoke('send-push', {
+              body: {
+                subscription: s.subscription,
+                title: '🛒 Neue Bestellung!',
+                body: `Von: ${payload.new?.pseudonym || 'Unbekannt'}`
+              }
+            })
+          }
+        }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bestellungen' }, () => ladeAlles())
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'bestellungen' }, () => ladeAlles())
       .subscribe()
     return () => supabase.removeChannel(kanal)
+  }, [])
+
+  useEffect(() => {
+    async function setupPush() {
+      const sub = await registrierePush()
+      if (sub) {
+        const { data: existing } = await supabase
+          .from('push_subscriptions')
+          .select('id')
+          .eq('subscription->>endpoint', sub.endpoint)
+          .single()
+
+        if (!existing) {
+          await supabase.from('push_subscriptions').insert([{
+            subscription: sub
+          }])
+        }
+      }
+    }
+    setupPush()
   }, [])
 
   if (laden) return <div style={{ padding: '2rem', color: C.textMuted, background: C.bg, minHeight: '100vh' }}>Laden...</div>
@@ -576,7 +615,7 @@ function Lieferer() {
               <div style={{ fontSize: '11px', color: C.textDim, marginBottom: '6px', letterSpacing: '0.08em' }}>MAX. BESTELLUNGEN</div>
               <select value={maxBestellungen} onChange={e => setMaxBestellungen(parseInt(e.target.value))}
                 style={{ ...selectStyle, width: '100%' }}>
-                {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n}</option>)}
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>

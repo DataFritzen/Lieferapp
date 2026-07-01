@@ -51,20 +51,20 @@ function setSpracheLS(lang) {
 }
 
 const C = {
-  bg: '#130f0b',
-  card: '#1c1610',
-  card2: '#242018',
-  border: '#3a3020',
-  gold: '#c8a96e',
-  goldDim: '#1a1508',
-  red: '#8b0000',
-  redBright: '#cc2200',
-  redDim: '#2a0500',
-  green: '#4a7c59',
-  greenDim: '#0a1a0f',
-  text: '#e8e0d0',
-  textDim: '#9a8a70',
-  textMuted: '#a09070',
+  bg: '#0f171a',
+  card: '#162125',
+  card2: '#1d2b30',
+  border: '#31434a',
+  gold: '#8fd0c7',
+  goldDim: '#102a2e',
+  red: '#287a8c',
+  redBright: '#4db6c8',
+  redDim: '#10252a',
+  green: '#4f8f70',
+  greenDim: '#10241a',
+  text: '#edf4f2',
+  textDim: '#9fb1b0',
+  textMuted: '#8fa09e',
 }
 
 const inputStyle = {
@@ -75,10 +75,12 @@ const inputStyle = {
   marginBottom: '10px', boxSizing: 'border-box', outline: 'none',
 }
 
-function StarIcon({ size = 16, color = '#c8a96e' }) {
+function PackageIcon({ size = 16, color = '#8fd0c7' }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
-      <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 8v8a2 2 0 0 1-1 1.73l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.73l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8Z" />
+      <path d="m3.3 7 8.7 5 8.7-5" />
+      <path d="M12 22V12" />
     </svg>
   )
 }
@@ -116,17 +118,17 @@ function PosterStatus({ t }) {
       textAlign: 'center'
     }}>
       <div style={{ marginBottom: '8px', display: 'inline-block' }}>
-        <img src="/Ich_liefere.webp" alt="El Comandante" style={{
+        <img src="/app-icon.png" alt="Bestellstatus" style={{
           width: '180px', height: '180px',
-          objectFit: 'cover', objectPosition: 'top',
-          borderRadius: '50%', border: '2px solid #8b0000',
-          boxShadow: '0 0 0 6px #8b0000, 0 0 0 8px #3a0a0a',
-          background: '#8b0000',
+          objectFit: 'cover',
+          borderRadius: '50%', border: `2px solid ${C.red}`,
+          boxShadow: `0 0 0 6px ${C.redDim}, 0 0 0 8px ${C.border}`,
+          background: C.redDim,
           display: 'block', margin: '0 auto'
         }} />
       </div>
       <div style={{
-        background: '#8b0000', borderRadius: '12px', padding: '14px 16px',
+        background: C.redDim, borderRadius: '12px', padding: '14px 16px',
         marginTop: '16px', position: 'relative'
       }}>
         <div style={{
@@ -134,12 +136,12 @@ function PosterStatus({ t }) {
           width: 0, height: 0,
           borderLeft: '8px solid transparent',
           borderRight: '8px solid transparent',
-          borderBottom: '8px solid #8b0000'
+          borderBottom: `8px solid ${C.redDim}`
         }} />
         <div style={{ fontSize: '14px', color: '#e8e0d0', fontStyle: 'italic', marginBottom: '6px' }}>
-          "La revolución no espera."
+          "{t.statusZitat}"
         </div>
-        <div style={{ fontSize: '13px', color: '#c8a96e' }}>{t.comandanteSagt}</div>
+        <div style={{ fontSize: '13px', color: C.gold }}>{t.statusHinweis}</div>
         <div style={{ fontSize: '12px', color: '#9a8a70', marginTop: '4px' }}>{t.bestaetigung}</div>
       </div>
     </div>
@@ -195,7 +197,7 @@ function Anmeldemaske({ token, onAnmelden }) {
 
       {/* Logo */}
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <img src="/Ich_liefere.webp" alt="Lieferapp" style={{
+        <img src="/app-icon.png" alt="Bestellservice" style={{
           width: '120px', height: '120px', borderRadius: '24px',
           border: `2px solid ${C.red}`, display: 'block', margin: '0 auto 16px',
           objectFit: 'cover'
@@ -246,7 +248,7 @@ function Anmeldemaske({ token, onAnmelden }) {
   )
 }
 
-function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: spracheVorgabe }) {
+function Besteller({ pseudonym, telefon: telefonVorgabe, sprache: spracheVorgabe }) {
   const [sprache, setSpracheState] = useState(spracheVorgabe || getSprache())
   const t = texte[sprache]
   const [auswahl, setAuswahl] = useState({})
@@ -327,7 +329,7 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
   }
 
   async function bestellenKlick() {
-    const ausgewaehlt = Object.fromEntries(Object.entries(auswahl).filter(([_, m]) => m > 0))
+    const ausgewaehlt = Object.fromEntries(Object.entries(auswahl).filter(entry => entry[1] > 0))
     if (Object.keys(ausgewaehlt).length === 0) { alert(t.bitteProjektWaehlen); return }
     if (!gewaehlterSlot) { alert(t.bitteZeitWaehlen); return }
     const { data: aktuelle } = await supabase.from('bestellungen').select('id').eq('zeitfenster_id', gewaehlterSlot.id)
@@ -363,7 +365,7 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
     <div style={{ padding: '20px', maxWidth: '440px', margin: '0 auto', minHeight: '100vh', background: C.bg }}>
       <div style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <StarIcon color={C.red} size={14} />
+          <PackageIcon color={C.red} size={14} />
           <span style={{ fontSize: '12px', color: C.gold, letterSpacing: '0.12em' }}>{t.bestellungEingegangen}</span>
         </div>
         <SprachDropdown sprache={sprache} onChange={s => setSpracheState(s)} />
@@ -378,7 +380,7 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
           borderRadius: '14px', padding: '20px', marginBottom: '20px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <StarIcon color={C.red} size={14} />
+            <PackageIcon color={C.red} size={14} />
             <span style={{ fontSize: '13px', color: C.gold, letterSpacing: '0.1em' }}>{t.bestaetigt}</span>
           </div>
           {bestaetigterSlot && (
@@ -420,7 +422,7 @@ function Besteller({ token, pseudonym, telefon: telefonVorgabe, sprache: sprache
       <div style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: `1px solid ${C.border}` }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <StarIcon color={C.red} size={14} />
+            <PackageIcon color={C.red} size={14} />
             <span style={{ fontSize: '12px', color: C.gold, letterSpacing: '0.12em' }}>{t.titel}</span>
           </div>
           <SprachDropdown sprache={sprache} onChange={s => setSpracheState(s)} />

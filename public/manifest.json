@@ -1,20 +1,20 @@
 {
-  "name": "Lieferapp",
-  "short_name": "Lieferapp",
+  "name": "Bestellservice",
+  "short_name": "Bestellung",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#8b0000",
-  "theme_color": "#0f0f0f",
+  "background_color": "#10202a",
+  "theme_color": "#10202a",
   "icons": [
     {
-      "src": "/Ich_liefere.webp",
+      "src": "/app-icon.png",
       "sizes": "192x192",
-      "type": "image/webp"
+      "type": "image/png"
     },
     {
-      "src": "/Ich_liefere.webp",
+      "src": "/app-icon.png",
       "sizes": "512x512",
-      "type": "image/webp"
+      "type": "image/png"
     }
   ]
 }

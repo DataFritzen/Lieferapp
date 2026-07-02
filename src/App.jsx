@@ -118,7 +118,7 @@ function PosterStatus({ t }) {
       textAlign: 'center'
     }}>
       <div style={{ marginBottom: '8px', display: 'inline-block' }}>
-        <img src="/app-icon.png" alt="Bestellstatus" style={{
+        <img src="/app-icon-512.png" alt="Bestellstatus" style={{
           width: '180px', height: '180px',
           objectFit: 'cover',
           borderRadius: '50%', border: `2px solid ${C.red}`,
@@ -197,7 +197,7 @@ function Anmeldemaske({ token, onAnmelden }) {
 
       {/* Logo */}
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <img src="/app-icon.png" alt="Bestellservice" style={{
+        <img src="/app-icon-512.png" alt="Bestellservice" style={{
           width: '120px', height: '120px', borderRadius: '24px',
           border: `2px solid ${C.red}`, display: 'block', margin: '0 auto 16px',
           objectFit: 'cover'
